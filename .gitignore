@@ -5,6 +5,12 @@ node_modules/
 tmp/
 dist/
 build/
+
+# Prevent accidental build artifacts in src directories
+packages/*/src/**/*.js
+packages/*/src/**/*.d.ts
+packages/*/src/**/*.js.map
+packages/*/src/**/*.d.ts.map
 docs/
 scratchpad/*
 !scratchpad/tsconfig.json
