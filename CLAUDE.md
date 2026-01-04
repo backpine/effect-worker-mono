@@ -62,6 +62,7 @@ return { env, ctx }
 
 ### Import Conventions
 
+- All shared packages use the `@repo/*` namespace (e.g., `@repo/domain`, `@repo/db`)
 - Apps use `@/*` for internal imports (e.g., `@/services`, `@/handlers`)
 - Packages use relative imports (`./`, `../`)
 - Cross-package imports use `@repo/*`

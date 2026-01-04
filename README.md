@@ -35,6 +35,8 @@ pnpm dev              # Start dev server
 
 ## Packages
 
+All packages use the `@repo/*` namespace for internal monorepo imports.
+
 ### `@repo/domain`
 Core domain types, branded schemas, and errors.
 
