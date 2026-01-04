@@ -1,5 +1,5 @@
 /**
- * @backpine/contracts
+ * @repo/contracts
  *
  * API contract definitions for Effect Worker.
  *

@@ -10,8 +10,8 @@ import { PgDrizzle } from "@effect/sql-drizzle/Pg"
 import { eq } from "drizzle-orm"
 
 import { users } from "../schema"
-import type { UserId, Email, User, CreateUser } from "@backpine/domain"
-import { UserNotFoundError, UserCreationError } from "@backpine/domain"
+import type { UserId, Email, User, CreateUser } from "@repo/domain"
+import { UserNotFoundError, UserCreationError } from "@repo/domain"
 
 // ============================================================================
 // Internal Helpers

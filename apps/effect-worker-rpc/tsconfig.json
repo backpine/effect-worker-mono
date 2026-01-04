@@ -13,14 +13,14 @@
     "types": ["@cloudflare/workers-types", "node"],
     "paths": {
       "@/*": ["./src/*"],
-      "@backpine/cloudflare": ["../../packages/cloudflare/src/index.ts"],
-      "@backpine/cloudflare/*": ["../../packages/cloudflare/src/*"],
-      "@backpine/db": ["../../packages/db/src/index.ts"],
-      "@backpine/db/*": ["../../packages/db/src/*"],
-      "@backpine/domain": ["../../packages/domain/src/index.ts"],
-      "@backpine/domain/*": ["../../packages/domain/src/*"],
-      "@backpine/contracts": ["../../packages/contracts/src/index.ts"],
-      "@backpine/contracts/*": ["../../packages/contracts/src/*"]
+      "@repo/cloudflare": ["../../packages/cloudflare/src/index.ts"],
+      "@repo/cloudflare/*": ["../../packages/cloudflare/src/*"],
+      "@repo/db": ["../../packages/db/src/index.ts"],
+      "@repo/db/*": ["../../packages/db/src/*"],
+      "@repo/domain": ["../../packages/domain/src/index.ts"],
+      "@repo/domain/*": ["../../packages/domain/src/*"],
+      "@repo/contracts": ["../../packages/contracts/src/index.ts"],
+      "@repo/contracts/*": ["../../packages/contracts/src/*"]
     }
   },
   "include": ["src/**/*.ts", "worker-configuration.d.ts"],

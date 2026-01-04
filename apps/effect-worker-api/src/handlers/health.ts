@@ -5,7 +5,7 @@
  */
 import { HttpApiBuilder } from "@effect/platform"
 import { DateTime, Effect } from "effect"
-import { WorkerApi } from "@backpine/contracts"
+import { WorkerApi } from "@repo/contracts"
 
 /**
  * Health endpoint handler implementation.

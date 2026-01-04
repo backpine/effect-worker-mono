@@ -10,7 +10,7 @@ import { HttpApiMiddleware } from "@effect/platform"
 import {
   CloudflareBindings,
   CloudflareBindingsError
-} from "@backpine/cloudflare"
+} from "@repo/cloudflare"
 
 /**
  * Middleware that provides CloudflareBindings to HTTP handlers.
@@ -27,7 +27,7 @@ import {
  * The implementation must be provided by the app via Layer.
  */
 export class CloudflareBindingsMiddleware extends HttpApiMiddleware.Tag<CloudflareBindingsMiddleware>()(
-  "@backpine/api/CloudflareBindingsMiddleware",
+  "@repo/api/CloudflareBindingsMiddleware",
   {
     failure: CloudflareBindingsError,
     provides: CloudflareBindings

@@ -1,5 +1,5 @@
 /**
- * @backpine/db
+ * @repo/db
  *
  * Database schema and queries for Effect Worker.
  *

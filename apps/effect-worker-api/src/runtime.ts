@@ -9,7 +9,7 @@ import { Effect, Layer, ManagedRuntime } from "effect"
 import { HttpApiBuilder, HttpServer, OpenApi } from "@effect/platform"
 import * as ServerRequest from "@effect/platform/HttpServerRequest"
 import * as ServerResponse from "@effect/platform/HttpServerResponse"
-import { WorkerApi } from "@backpine/contracts"
+import { WorkerApi } from "@repo/contracts"
 import { HttpGroupsLive } from "@/handlers"
 import { MiddlewareLive } from "@/services"
 

@@ -7,7 +7,7 @@
  * @module
  */
 import { HttpApiMiddleware } from "@effect/platform"
-import { PgDrizzle, DatabaseConnectionError } from "@backpine/cloudflare"
+import { PgDrizzle, DatabaseConnectionError } from "@repo/cloudflare"
 
 /**
  * Middleware that provides PgDrizzle to HTTP handlers.
@@ -31,7 +31,7 @@ import { PgDrizzle, DatabaseConnectionError } from "@backpine/cloudflare"
  * ```
  */
 export class DatabaseMiddleware extends HttpApiMiddleware.Tag<DatabaseMiddleware>()(
-  "@backpine/api/DatabaseMiddleware",
+  "@repo/api/DatabaseMiddleware",
   {
     failure: DatabaseConnectionError,
     provides: PgDrizzle

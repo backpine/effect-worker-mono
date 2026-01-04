@@ -35,21 +35,21 @@ pnpm dev              # Start dev server
 
 ## Packages
 
-### `@backpine/domain`
+### `@repo/domain`
 Core domain types, branded schemas, and errors.
 
 ```typescript
-import { UserId, UserSchema, UserNotFoundError } from "@backpine/domain"
+import { UserId, UserSchema, UserNotFoundError } from "@repo/domain"
 
 // Branded types for type-safe IDs
 const id: UserId = "usr_abc123" as UserId
 ```
 
-### `@backpine/contracts`
+### `@repo/contracts`
 API definitions for HTTP and RPC endpoints. Defines the contract between client and server.
 
 ```typescript
-import { WorkerApi, UsersGroup, UsersRpc } from "@backpine/contracts"
+import { WorkerApi, UsersGroup, UsersRpc } from "@repo/contracts"
 ```
 
 **HTTP Groups:**
@@ -59,7 +59,7 @@ import { WorkerApi, UsersGroup, UsersRpc } from "@backpine/contracts"
 **RPC Procedures:**
 - `UsersRpc` - User operations via RPC
 
-### `@backpine/cloudflare`
+### `@repo/cloudflare`
 Infrastructure layer for Cloudflare Workers integration with Effect.
 
 ```typescript
@@ -68,14 +68,14 @@ import {
   CloudflareBindings,       // Service tag
   PgDrizzle,               // Database connection
   currentEnv,              // FiberRef for env access
-} from "@backpine/cloudflare"
+} from "@repo/cloudflare"
 ```
 
-### `@backpine/db`
+### `@repo/db`
 Drizzle ORM schema definitions.
 
 ```typescript
-import { users } from "@backpine/db"
+import { users } from "@repo/db"
 ```
 
 ## Applications
@@ -218,10 +218,10 @@ Strict mode enabled with path aliases for all packages:
 {
   "compilerOptions": {
     "paths": {
-      "@backpine/domain": ["./packages/domain/src"],
-      "@backpine/contracts": ["./packages/contracts/src"],
-      "@backpine/cloudflare": ["./packages/cloudflare/src"],
-      "@backpine/db": ["./packages/db/src"]
+      "@repo/domain": ["./packages/domain/src"],
+      "@repo/contracts": ["./packages/contracts/src"],
+      "@repo/cloudflare": ["./packages/cloudflare/src"],
+      "@repo/db": ["./packages/db/src"]
     }
   }
 }

@@ -5,8 +5,8 @@
  */
 import { HttpApiBuilder } from "@effect/platform"
 import { Effect } from "effect"
-import { WorkerApi } from "@backpine/contracts"
-import { UserQueries } from "@backpine/db"
+import { WorkerApi } from "@repo/contracts"
+import { UserQueries } from "@repo/db"
 
 /**
  * Users endpoint handler implementation.

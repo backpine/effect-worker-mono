@@ -1,7 +1,7 @@
 /**
  * Cloudflare Bindings Service
  *
- * Re-exports FiberRef bridge from @backpine/cloudflare.
+ * Re-exports FiberRef bridge from @repo/cloudflare.
  * This provides app-local type inference for the Env type.
  *
  * @module

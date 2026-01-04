@@ -12,8 +12,8 @@ import {
   UserSchema,
   UserIdPathSchema,
   CreateUserSchema
-} from "@backpine/domain"
-import { UserCreationError, UserNotFoundError } from "@backpine/domain"
+} from "@repo/domain"
+import { UserCreationError, UserNotFoundError } from "@repo/domain"
 import { DatabaseMiddleware } from "../middleware"
 
 /**

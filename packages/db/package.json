@@ -1,5 +1,5 @@
 {
-  "name": "@backpine/db",
+  "name": "@repo/db",
   "version": "0.0.0",
   "type": "module",
   "license": "MIT",
@@ -30,7 +30,7 @@
     "drizzle-orm": "^0.45.0",
     "effect": "latest",
     "@effect/sql-drizzle": "latest",
-    "@backpine/domain": "workspace:*"
+    "@repo/domain": "workspace:*"
   },
   "devDependencies": {
     "drizzle-kit": "^0.31.8"

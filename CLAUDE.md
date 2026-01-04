@@ -26,18 +26,18 @@ DATABASE_URL=postgres://... pnpm db:migrate   # Run migrations
 
 ## Architecture
 
-This is a Cloudflare Workers monorepo using Effect-TS. Apps import from shared packages via TypeScript path aliases (`@backpine/*`).
+This is a Cloudflare Workers monorepo using Effect-TS. Apps import from shared packages via TypeScript path aliases (`@repo/*`).
 
 ### Package Dependency Flow
 
 ```
-@backpine/domain (types, schemas, errors)
+@repo/domain (types, schemas, errors)
        ↓
-@backpine/db (Drizzle schema + Effect query programs)
+@repo/db (Drizzle schema + Effect query programs)
        ↓
-@backpine/cloudflare (FiberRef bridge, service tags, database factory)
+@repo/cloudflare (FiberRef bridge, service tags, database factory)
        ↓
-@backpine/contracts (HTTP/RPC API definitions, middleware tags)
+@repo/contracts (HTTP/RPC API definitions, middleware tags)
        ↓
 apps/ (handler implementations, middleware implementations)
 ```
@@ -56,16 +56,16 @@ const env = yield* FiberRef.get(currentEnv)
 return { env, ctx }
 ```
 
-**Contract/Implementation Split**: `@backpine/contracts` defines abstract middleware tags; apps provide concrete implementations via Layers.
+**Contract/Implementation Split**: `@repo/contracts` defines abstract middleware tags; apps provide concrete implementations via Layers.
 
-**Query Programs**: Database queries live in `@backpine/db/src/queries/` as Effect programs requiring `PgDrizzle`. Handlers call these instead of inline queries.
+**Query Programs**: Database queries live in `@repo/db/src/queries/` as Effect programs requiring `PgDrizzle`. Handlers call these instead of inline queries.
 
 ### Import Conventions
 
 - Apps use `@/*` for internal imports (e.g., `@/services`, `@/handlers`)
 - Packages use relative imports (`./`, `../`)
-- Cross-package imports use `@backpine/*`
-- Never re-export from `@backpine/*` in app barrel files; import directly where needed
+- Cross-package imports use `@repo/*`
+- Never re-export from `@repo/*` in app barrel files; import directly where needed
 
 ### Local Development
 
@@ -78,12 +78,12 @@ CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="postgres://postgres:po
 
 | Type | Location |
 |------|----------|
-| Domain types, branded schemas | `@backpine/domain/src/schemas/` |
-| Domain errors | `@backpine/domain/src/errors/` |
-| Database tables (Drizzle) | `@backpine/db/src/schema.ts` |
-| Reusable queries | `@backpine/db/src/queries/` |
-| HTTP endpoint definitions | `@backpine/contracts/src/http/groups/` |
-| RPC procedure definitions | `@backpine/contracts/src/rpc/procedures/` |
-| Middleware tags | `@backpine/contracts/src/*/middleware/` |
+| Domain types, branded schemas | `@repo/domain/src/schemas/` |
+| Domain errors | `@repo/domain/src/errors/` |
+| Database tables (Drizzle) | `@repo/db/src/schema.ts` |
+| Reusable queries | `@repo/db/src/queries/` |
+| HTTP endpoint definitions | `@repo/contracts/src/http/groups/` |
+| RPC procedure definitions | `@repo/contracts/src/rpc/procedures/` |
+| Middleware tags | `@repo/contracts/src/*/middleware/` |
 | Handler implementations | `apps/*/src/handlers/` |
 | Middleware implementations | `apps/*/src/services/middleware.ts` |

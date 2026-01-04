@@ -1,5 +1,5 @@
 /**
- * @backpine/cloudflare
+ * @repo/cloudflare
  *
  * Cloudflare Worker infrastructure for Effect.
  *

@@ -10,7 +10,7 @@ import { RpcMiddleware } from "@effect/rpc"
 import {
   CloudflareBindings,
   CloudflareBindingsError
-} from "@backpine/cloudflare"
+} from "@repo/cloudflare"
 
 /**
  * Middleware that provides CloudflareBindings to RPC handlers.
@@ -25,7 +25,7 @@ import {
  * Implementation is provided by the app layer.
  */
 export class RpcCloudflareMiddleware extends RpcMiddleware.Tag<RpcCloudflareMiddleware>()(
-  "@backpine/rpc/RpcCloudflareMiddleware",
+  "@repo/rpc/RpcCloudflareMiddleware",
   {
     failure: CloudflareBindingsError,
     provides: CloudflareBindings

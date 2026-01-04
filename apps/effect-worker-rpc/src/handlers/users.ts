@@ -6,9 +6,9 @@
  * @module
  */
 import { Effect } from "effect"
-import { UsersRpc } from "@backpine/contracts"
-import { UserQueries } from "@backpine/db"
-import type { UserId, CreateUser } from "@backpine/domain"
+import { UsersRpc } from "@repo/contracts"
+import { UserQueries } from "@repo/db"
+import type { UserId, CreateUser } from "@repo/domain"
 
 /**
  * Users RPC handler layer.

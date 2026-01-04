@@ -4,8 +4,8 @@ import type { UserConfig } from "vitest/config"
 const alias = (name: string) => {
   const target = process.env.TEST_DIST !== undefined ? "dist/dist/esm" : "src"
   return ({
-    [`@backpine/${name}/test`]: path.join(__dirname, "packages", name, "test"),
-    [`@backpine/${name}`]: path.join(__dirname, "packages", name, target)
+    [`@repo/${name}/test`]: path.join(__dirname, "packages", name, "test"),
+    [`@repo/${name}`]: path.join(__dirname, "packages", name, target)
   })
 }
 

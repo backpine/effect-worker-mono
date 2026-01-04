@@ -1,7 +1,7 @@
 /**
  * Middleware Implementations
  *
- * App-specific implementations of middleware defined in @backpine/api.
+ * App-specific implementations of middleware defined in @repo/api.
  *
  * @module
  */
@@ -11,9 +11,9 @@ import {
   CloudflareBindingsError,
   DatabaseMiddleware,
   DatabaseConnectionError,
-} from "@backpine/contracts";
+} from "@repo/contracts";
 import { currentEnv, currentCtx } from "@/services/cloudflare";
-import { makeDrizzle } from "@backpine/cloudflare";
+import { makeDrizzle } from "@repo/cloudflare";
 
 /**
  * Live implementation of CloudflareBindingsMiddleware.

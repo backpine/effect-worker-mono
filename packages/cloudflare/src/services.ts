@@ -20,7 +20,7 @@ import type { WorkerExecutionContext } from "./fiber-ref"
  * ```
  */
 export class CloudflareBindings extends Context.Tag(
-  "@backpine/cloudflare/CloudflareBindings"
+  "@repo/cloudflare/CloudflareBindings"
 )<
   CloudflareBindings,
   { readonly env: unknown; readonly ctx: WorkerExecutionContext }

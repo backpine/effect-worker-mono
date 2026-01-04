@@ -11,7 +11,7 @@ This document provides guidance for AI assistants working with the Effect Worker
 1. **Effect-TS Integration**: All operations use Effect types for composition, error handling, and dependency injection
 2. **Request-Scoped Runtime**: FiberRef bridge makes Cloudflare bindings available at request time
 3. **Layer Memoization**: Static services are instantiated once, request-scoped services via middleware
-4. **Monorepo Packages**: Imports from `@backpine/domain` and `@backpine/api`
+4. **Monorepo Packages**: Imports from `@repo/domain` and `@repo/api`
 
 ## Repository Structure
 
@@ -53,10 +53,10 @@ return runtime.runPromise(effect)
 
 ### 2. Middleware Pattern
 
-Middleware definitions come from `@backpine/api`, implementations are local:
+Middleware definitions come from `@repo/api`, implementations are local:
 
 ```typescript
-// From @backpine/api
+// From @repo/api
 export class CloudflareBindingsMiddleware extends HttpApiMiddleware.Tag<...>()
 
 // Local implementation
@@ -73,11 +73,11 @@ export const CloudflareBindingsMiddlewareLive = Layer.effect(
 
 ### 3. Handler Pattern
 
-Handlers implement group definitions from `@backpine/api`:
+Handlers implement group definitions from `@repo/api`:
 
 ```typescript
 export const UsersGroupLive = HttpApiBuilder.group(
-  WorkerApi,  // From @backpine/api
+  WorkerApi,  // From @repo/api
   "users",
   (handlers) => Effect.gen(function* () {
     return handlers
@@ -97,7 +97,7 @@ pnpm build            # Build for production
 pnpm deploy           # Deploy to Cloudflare
 ```
 
-Database operations are centralized in `@backpine/db`:
+Database operations are centralized in `@repo/db`:
 ```bash
 cd packages/db
 DATABASE_URL=... pnpm db:push    # Push schema to database
@@ -106,8 +106,8 @@ DATABASE_URL=... pnpm db:studio  # Open Drizzle Studio
 
 ## Dependencies
 
-- `@backpine/domain` - Domain types, schemas, errors
-- `@backpine/api` - API definitions, middleware tags
+- `@repo/domain` - Domain types, schemas, errors
+- `@repo/api` - API definitions, middleware tags
 - `effect` - Core Effect-TS library
 - `@effect/platform` - HTTP API building
 - `@effect/sql-drizzle` - Database integration
@@ -122,8 +122,8 @@ DATABASE_URL=... pnpm db:studio  # Open Drizzle Studio
 
 ## When Making Changes
 
-1. Domain types go in `@backpine/domain`
-2. API definitions go in `@backpine/api`
+1. Domain types go in `@repo/domain`
+2. API definitions go in `@repo/api`
 3. Implementations stay in this app
 4. Use `yield* DatabaseService` for DB access
 5. Use `yield* CloudflareBindings` for env/ctx access

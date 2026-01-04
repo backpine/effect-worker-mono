@@ -13,10 +13,10 @@
     "build": "tsc && wrangler deploy --dry-run"
   },
   "dependencies": {
-    "@backpine/contracts": "workspace:^",
-    "@backpine/cloudflare": "workspace:^",
-    "@backpine/db": "workspace:^",
-    "@backpine/domain": "workspace:^",
+    "@repo/contracts": "workspace:^",
+    "@repo/cloudflare": "workspace:^",
+    "@repo/db": "workspace:^",
+    "@repo/domain": "workspace:^",
     "@effect/experimental": "latest",
     "@effect/platform": "latest",
     "@effect/sql": "latest",

@@ -7,7 +7,7 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "pnpm --filter '@backpine/domain' run build && pnpm --filter '@backpine/db' --filter '@backpine/cloudflare' run build && pnpm --filter '@backpine/contracts' run build",
+    "build": "pnpm --filter '@repo/domain' run build && pnpm --filter '@repo/db' --filter '@repo/cloudflare' run build && pnpm --filter '@repo/contracts' run build",
     "check": "pnpm -r run check",
     "clean": "pnpm --filter './packages/*' run clean",
     "test": "vitest",

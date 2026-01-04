@@ -7,7 +7,7 @@
  * @module
  */
 import { RpcMiddleware } from "@effect/rpc"
-import { PgDrizzle, DatabaseConnectionError } from "@backpine/cloudflare"
+import { PgDrizzle, DatabaseConnectionError } from "@repo/cloudflare"
 
 /**
  * Middleware that provides PgDrizzle to RPC handlers.
@@ -29,7 +29,7 @@ import { PgDrizzle, DatabaseConnectionError } from "@backpine/cloudflare"
  * ```
  */
 export class RpcDatabaseMiddleware extends RpcMiddleware.Tag<RpcDatabaseMiddleware>()(
-  "@backpine/rpc/RpcDatabaseMiddleware",
+  "@repo/rpc/RpcDatabaseMiddleware",
   {
     failure: DatabaseConnectionError,
     provides: PgDrizzle
