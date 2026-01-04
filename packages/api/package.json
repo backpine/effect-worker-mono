@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@effect/platform": "latest",
+    "@backpine/cloudflare": "workspace:^",
     "@backpine/domain": "workspace:^",
     "effect": "latest"
   },

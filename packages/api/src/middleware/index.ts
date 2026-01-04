@@ -1,7 +1,7 @@
 /**
- * Middleware Definitions
+ * HTTP Middleware
  *
- * Exports middleware tags for request-scoped services.
+ * HttpApiMiddleware tags for request-scoped services.
  * Implementations are provided by apps.
  *
  * @module
@@ -9,8 +9,7 @@
 export {
   CloudflareBindings,
   CloudflareBindingsError,
-  CloudflareBindingsMiddleware,
-  type WorkerExecutionContext
+  CloudflareBindingsMiddleware
 } from "./CloudflareBindings.js"
 
 export {

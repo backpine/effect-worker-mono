@@ -26,10 +26,14 @@
       "@/handlers/*": ["./src/handlers/*"],
       "@/services": ["./src/services/index.ts"],
       "@/services/*": ["./src/services/*"],
-      "@backpine/domain": ["../../packages/domain/src/index.ts"],
-      "@backpine/domain/*": ["../../packages/domain/src/*"],
       "@backpine/api": ["../../packages/api/src/index.ts"],
-      "@backpine/api/*": ["../../packages/api/src/*"]
+      "@backpine/api/*": ["../../packages/api/src/*"],
+      "@backpine/cloudflare": ["../../packages/cloudflare/src/index.ts"],
+      "@backpine/cloudflare/*": ["../../packages/cloudflare/src/*"],
+      "@backpine/db": ["../../packages/db/src/index.ts"],
+      "@backpine/db/*": ["../../packages/db/src/*"],
+      "@backpine/domain": ["../../packages/domain/src/index.ts"],
+      "@backpine/domain/*": ["../../packages/domain/src/*"]
     },
     "baseUrl": "."
   },

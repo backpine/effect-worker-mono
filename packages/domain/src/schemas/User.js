@@ -1,0 +1,43 @@
+/**
+ * User Schemas
+ *
+ * Effect Schema definitions for user-related data structures.
+ * These schemas provide both compile-time types and runtime validation.
+ *
+ * @module
+ */
+import { Schema as S } from "effect";
+/**
+ * User ID with format validation.
+ * Format: usr_[alphanumeric]
+ */
+export const UserIdSchema = S.String.pipe(S.pattern(/^usr_[a-zA-Z0-9]+$/), S.brand("UserId"));
+/**
+ * Email with basic format validation.
+ */
+export const EmailSchema = S.String.pipe(S.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/), S.brand("Email"));
+/**
+ * User entity schema.
+ */
+export const UserSchema = S.Struct({
+    id: UserIdSchema,
+    email: EmailSchema,
+    name: S.String,
+    createdAt: S.DateTimeUtc
+});
+/**
+ * Create user request payload.
+ */
+export const CreateUserSchema = S.Struct({
+    email: S.String.pipe(S.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, {
+        message: () => "Invalid email format"
+    })),
+    name: S.String.pipe(S.minLength(1, { message: () => "Name is required" }))
+});
+/**
+ * User ID path parameter schema.
+ */
+export const UserIdPathSchema = S.Struct({
+    id: UserIdSchema
+});
+//# sourceMappingURL=User.js.map

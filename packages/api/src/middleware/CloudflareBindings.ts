@@ -1,43 +1,16 @@
 /**
- * Cloudflare Bindings Middleware Definition
+ * Cloudflare Bindings HTTP Middleware
  *
- * Defines the middleware tag for providing Cloudflare bindings to handlers.
- * The implementation is provided by the app since it requires access to
- * app-specific FiberRefs.
+ * HttpApiMiddleware that provides CloudflareBindings to HTTP handlers.
+ * The implementation is provided by the app.
  *
  * @module
  */
-import { HttpApiMiddleware, HttpApiSchema } from "@effect/platform"
-import { Context, Schema as S } from "effect"
-
-/**
- * ExecutionContext interface for Cloudflare Workers.
- */
-export interface WorkerExecutionContext {
-  waitUntil(promise: Promise<unknown>): void
-  passThroughOnException(): void
-}
-
-/**
- * CloudflareBindings service provides access to Cloudflare's env and ctx.
- *
- * Apps should cast the `env` to their specific Env type when accessing.
- */
-export class CloudflareBindings extends Context.Tag(
-  "@backpine/api/CloudflareBindings"
-)<
+import { HttpApiMiddleware } from "@effect/platform"
+import {
   CloudflareBindings,
-  { readonly env: unknown; readonly ctx: WorkerExecutionContext }
->() {}
-
-/**
- * Error when Cloudflare bindings are not available.
- */
-export class CloudflareBindingsError extends S.TaggedError<CloudflareBindingsError>()(
-  "CloudflareBindingsError",
-  { message: S.String },
-  HttpApiSchema.annotations({ status: 500 })
-) {}
+  CloudflareBindingsError
+} from "@backpine/cloudflare"
 
 /**
  * Middleware that provides CloudflareBindings to HTTP handlers.
@@ -60,3 +33,6 @@ export class CloudflareBindingsMiddleware extends HttpApiMiddleware.Tag<Cloudfla
     provides: CloudflareBindings
   }
 ) {}
+
+// Re-export for convenience
+export { CloudflareBindings, CloudflareBindingsError }

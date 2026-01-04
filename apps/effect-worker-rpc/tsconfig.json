@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "types": ["@cloudflare/workers-types", "node"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@backpine/cloudflare": ["../../packages/cloudflare/src/index.ts"],
+      "@backpine/cloudflare/*": ["../../packages/cloudflare/src/*"],
+      "@backpine/db": ["../../packages/db/src/index.ts"],
+      "@backpine/db/*": ["../../packages/db/src/*"],
+      "@backpine/domain": ["../../packages/domain/src/index.ts"],
+      "@backpine/domain/*": ["../../packages/domain/src/*"],
+      "@backpine/rpc": ["../../packages/rpc/src/index.ts"],
+      "@backpine/rpc/*": ["../../packages/rpc/src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "worker-configuration.d.ts"],
+  "exclude": ["node_modules"]
+}

@@ -1,33 +1,13 @@
 /**
- * Database Middleware Definition
+ * Database HTTP Middleware
  *
- * Defines the middleware tag for providing database access to handlers.
- * The implementation is provided by the app since it requires access to
- * app-specific database configuration.
+ * HttpApiMiddleware that provides DatabaseService to HTTP handlers.
+ * The implementation is provided by the app.
  *
  * @module
  */
-import { HttpApiMiddleware, HttpApiSchema } from "@effect/platform"
-import { Context, Schema as S } from "effect"
-
-/**
- * DatabaseService provides access to a request-scoped database instance.
- *
- * Apps should cast the `db` to their specific database type when accessing.
- */
-export class DatabaseService extends Context.Tag(
-  "@backpine/api/DatabaseService"
-)<DatabaseService, { readonly db: unknown }>() {}
-
-/**
- * Error when database connection fails.
- * Returns 503 Service Unavailable.
- */
-export class DatabaseConnectionError extends S.TaggedError<DatabaseConnectionError>()(
-  "DatabaseConnectionError",
-  { message: S.String },
-  HttpApiSchema.annotations({ status: 503 })
-) {}
+import { HttpApiMiddleware } from "@effect/platform"
+import { DatabaseService, DatabaseConnectionError } from "@backpine/cloudflare"
 
 /**
  * Middleware that provides DatabaseService to HTTP handlers.
@@ -50,3 +30,6 @@ export class DatabaseMiddleware extends HttpApiMiddleware.Tag<DatabaseMiddleware
     provides: DatabaseService
   }
 ) {}
+
+// Re-export for convenience
+export { DatabaseService, DatabaseConnectionError }

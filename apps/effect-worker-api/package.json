@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@backpine/api": "workspace:^",
+    "@backpine/cloudflare": "workspace:^",
+    "@backpine/db": "workspace:^",
     "@backpine/domain": "workspace:^",
     "@effect/experimental": "latest",
     "@effect/platform": "latest",

@@ -56,6 +56,12 @@ importers:
       '@backpine/api':
         specifier: workspace:^
         version: link:../../packages/api/dist
+      '@backpine/cloudflare':
+        specifier: workspace:^
+        version: link:../../packages/cloudflare/dist
+      '@backpine/db':
+        specifier: workspace:^
+        version: link:../../packages/db/dist
       '@backpine/domain':
         specifier: workspace:^
         version: link:../../packages/domain/dist
@@ -100,8 +106,69 @@ importers:
         specifier: ^4.55.0
         version: 4.56.0(@cloudflare/workers-types@4.20260103.0)
 
+  apps/effect-worker-rpc:
+    dependencies:
+      '@backpine/cloudflare':
+        specifier: workspace:^
+        version: link:../../packages/cloudflare/dist
+      '@backpine/db':
+        specifier: workspace:^
+        version: link:../../packages/db/dist
+      '@backpine/domain':
+        specifier: workspace:^
+        version: link:../../packages/domain/dist
+      '@backpine/rpc':
+        specifier: workspace:^
+        version: link:../../packages/rpc/dist
+      '@effect/experimental':
+        specifier: latest
+        version: 0.58.0(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14)
+      '@effect/platform':
+        specifier: latest
+        version: 0.94.1(effect@3.19.14)
+      '@effect/rpc':
+        specifier: latest
+        version: 0.73.0(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14)
+      '@effect/sql':
+        specifier: latest
+        version: 0.49.0(@effect/experimental@0.58.0(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14))(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14)
+      '@effect/sql-drizzle':
+        specifier: latest
+        version: 0.48.0(@effect/sql@0.49.0(@effect/experimental@0.58.0(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14))(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14))(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260103.0)(pg@8.16.3))(effect@3.19.14)
+      '@effect/sql-pg':
+        specifier: latest
+        version: 0.50.0(@effect/experimental@0.58.0(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14))(@effect/platform@0.94.1(effect@3.19.14))(@effect/sql@0.49.0(@effect/experimental@0.58.0(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14))(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14))(effect@3.19.14)
+      drizzle-orm:
+        specifier: ^0.45.0
+        version: 0.45.1(@cloudflare/workers-types@4.20260103.0)(pg@8.16.3)
+      effect:
+        specifier: latest
+        version: 3.19.14
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20241127.0
+        version: 4.20260103.0
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.3
+      drizzle-kit:
+        specifier: ^0.31.8
+        version: 0.31.8
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.0
+        version: 2.1.9(@types/node@22.19.3)
+      wrangler:
+        specifier: ^4.55.0
+        version: 4.56.0(@cloudflare/workers-types@4.20260103.0)
+
   packages/api:
     dependencies:
+      '@backpine/cloudflare':
+        specifier: workspace:^
+        version: link:../cloudflare/dist
       '@backpine/domain':
         specifier: workspace:^
         version: link:../domain/dist
@@ -132,11 +199,62 @@ importers:
         version: 3.19.14
     publishDirectory: dist
 
+  packages/cloudflare:
+    dependencies:
+      '@effect/experimental':
+        specifier: latest
+        version: 0.58.0(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14)
+      '@effect/platform':
+        specifier: latest
+        version: 0.94.1(effect@3.19.14)
+      '@effect/sql':
+        specifier: latest
+        version: 0.49.0(@effect/experimental@0.58.0(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14))(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14)
+      '@effect/sql-drizzle':
+        specifier: latest
+        version: 0.48.0(@effect/sql@0.49.0(@effect/experimental@0.58.0(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14))(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14))(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260103.0)(pg@8.16.3))(effect@3.19.14)
+      '@effect/sql-pg':
+        specifier: latest
+        version: 0.50.0(@effect/experimental@0.58.0(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14))(@effect/platform@0.94.1(effect@3.19.14))(@effect/sql@0.49.0(@effect/experimental@0.58.0(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14))(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14))(effect@3.19.14)
+      drizzle-orm:
+        specifier: ^0.45.0
+        version: 0.45.1(@cloudflare/workers-types@4.20260103.0)(pg@8.16.3)
+      effect:
+        specifier: latest
+        version: 3.19.14
+    publishDirectory: dist
+
+  packages/db:
+    dependencies:
+      drizzle-orm:
+        specifier: ^0.45.0
+        version: 0.45.1(@cloudflare/workers-types@4.20260103.0)(pg@8.16.3)
+    publishDirectory: dist
+
   packages/domain:
     dependencies:
       '@effect/platform':
         specifier: latest
         version: 0.94.1(effect@3.19.14)
+      effect:
+        specifier: latest
+        version: 3.19.14
+    publishDirectory: dist
+
+  packages/rpc:
+    dependencies:
+      '@backpine/cloudflare':
+        specifier: workspace:^
+        version: link:../cloudflare/dist
+      '@backpine/domain':
+        specifier: workspace:^
+        version: link:../domain/dist
+      '@effect/platform':
+        specifier: latest
+        version: 0.94.1(effect@3.19.14)
+      '@effect/rpc':
+        specifier: latest
+        version: 0.73.0(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14)
       effect:
         specifier: latest
         version: 3.19.14

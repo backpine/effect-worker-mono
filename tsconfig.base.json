@@ -37,18 +37,20 @@
     "removeComments": false,
     "plugins": [{ "name": "@effect/language-service" }],
     "paths": {
-      "@backpine/cli": ["./packages/cli/src/index.js"],
-      "@backpine/cli/*": ["./packages/cli/src/*.js"],
-      "@backpine/cli/test/*": ["./packages/cli/test/*.js"],
-      "@backpine/domain": ["./packages/domain/src/index.js"],
-      "@backpine/domain/*": ["./packages/domain/src/*.js"],
-      "@backpine/domain/test/*": ["./packages/domain/test/*.js"],
-      "@backpine/api": ["./packages/api/src/index.js"],
-      "@backpine/api/*": ["./packages/api/src/*.js"],
-      "@backpine/api/test/*": ["./packages/api/test/*.js"],
-      "@backpine/server": ["./packages/server/src/index.js"],
-      "@backpine/server/*": ["./packages/server/src/*.js"],
-      "@backpine/server/test/*": ["./packages/server/test/*.js"]
+      "@backpine/api": ["./packages/api/dist/dist/dts/index.d.ts"],
+      "@backpine/api/*": ["./packages/api/dist/dist/dts/*.d.ts"],
+      "@backpine/cli": ["./packages/cli/dist/dist/dts/index.d.ts"],
+      "@backpine/cli/*": ["./packages/cli/dist/dist/dts/*.d.ts"],
+      "@backpine/cloudflare": ["./packages/cloudflare/dist/dist/dts/index.d.ts"],
+      "@backpine/cloudflare/*": ["./packages/cloudflare/dist/dist/dts/*.d.ts"],
+      "@backpine/db": ["./packages/db/dist/dist/dts/index.d.ts"],
+      "@backpine/db/*": ["./packages/db/dist/dist/dts/*.d.ts"],
+      "@backpine/domain": ["./packages/domain/dist/dist/dts/index.d.ts"],
+      "@backpine/domain/*": ["./packages/domain/dist/dist/dts/*.d.ts"],
+      "@backpine/rpc": ["./packages/rpc/dist/dist/dts/index.d.ts"],
+      "@backpine/rpc/*": ["./packages/rpc/dist/dist/dts/*.d.ts"],
+      "@backpine/server": ["./packages/server/dist/dist/dts/index.d.ts"],
+      "@backpine/server/*": ["./packages/server/dist/dist/dts/*.d.ts"]
     }
   }
 }
