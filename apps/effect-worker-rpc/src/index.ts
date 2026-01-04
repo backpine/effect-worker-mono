@@ -5,8 +5,8 @@
  *
  * @module
  */
-import { rpcRuntime, handleRpcRequest } from "./runtime.js"
-import { withCloudflareBindings } from "./services/index.js"
+import { rpcRuntime, handleRpcRequest } from "@/runtime"
+import { withCloudflareBindings } from "@/services"
 
 /**
  * Cloudflare Worker fetch handler.

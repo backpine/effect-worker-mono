@@ -7,8 +7,8 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "pnpm --filter '@backpine/domain' --filter '@backpine/cloudflare' --filter '@backpine/db' run build && pnpm --filter '@backpine/contracts' run build",
-    "check": "tsc --noEmit",
+    "build": "pnpm --filter '@backpine/domain' run build && pnpm --filter '@backpine/db' --filter '@backpine/cloudflare' run build && pnpm --filter '@backpine/contracts' run build",
+    "check": "pnpm -r run check",
     "clean": "pnpm --filter './packages/*' run clean",
     "test": "vitest",
     "coverage": "vitest --coverage"

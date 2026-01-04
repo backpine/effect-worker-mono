@@ -3,4 +3,4 @@
  *
  * @module
  */
-export { UsersRpcHandlersLive } from "./users.js"
+export { UsersRpcHandlersLive } from "@/handlers/users"

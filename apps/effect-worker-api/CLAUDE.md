@@ -92,11 +92,16 @@ export const UsersGroupLive = HttpApiBuilder.group(
 ```bash
 pnpm dev              # Start local dev server with wrangler
 pnpm test             # Run tests
-pnpm typecheck        # Type checking
+pnpm check            # Type checking
 pnpm build            # Build for production
 pnpm deploy           # Deploy to Cloudflare
-pnpm db:push          # Push schema to database
-pnpm db:studio        # Open Drizzle Studio
+```
+
+Database operations are centralized in `@backpine/db`:
+```bash
+cd packages/db
+DATABASE_URL=... pnpm db:push    # Push schema to database
+DATABASE_URL=... pnpm db:studio  # Open Drizzle Studio
 ```
 
 ## Dependencies

@@ -72,9 +72,6 @@ importers:
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.3
-      drizzle-kit:
-        specifier: ^0.31.8
-        version: 0.31.8
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
@@ -130,9 +127,6 @@ importers:
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.3
-      drizzle-kit:
-        specifier: ^0.31.8
-        version: 0.31.8
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
@@ -187,9 +181,22 @@ importers:
 
   packages/db:
     dependencies:
+      '@backpine/domain':
+        specifier: workspace:*
+        version: link:../domain
+      '@effect/sql-drizzle':
+        specifier: latest
+        version: 0.48.0(@effect/sql@0.49.0(@effect/experimental@0.58.0(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14))(@effect/platform@0.94.1(effect@3.19.14))(effect@3.19.14))(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260103.0)(pg@8.16.3))(effect@3.19.14)
       drizzle-orm:
         specifier: ^0.45.0
         version: 0.45.1(@cloudflare/workers-types@4.20260103.0)(pg@8.16.3)
+      effect:
+        specifier: latest
+        version: 3.19.14
+    devDependencies:
+      drizzle-kit:
+        specifier: ^0.31.8
+        version: 0.31.8
 
   packages/domain:
     dependencies:

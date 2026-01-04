@@ -20,12 +20,7 @@
     "exactOptionalPropertyTypes": true,
     "noImplicitReturns": false,
     "paths": {
-      "@/db": ["./src/db/index.ts"],
-      "@/db/*": ["./src/db/*"],
-      "@/handlers": ["./src/handlers/index.ts"],
-      "@/handlers/*": ["./src/handlers/*"],
-      "@/services": ["./src/services/index.ts"],
-      "@/services/*": ["./src/services/*"],
+      "@/*": ["./src/*"],
       "@backpine/contracts": ["../../packages/contracts/src/index.ts"],
       "@backpine/contracts/*": ["../../packages/contracts/src/*"],
       "@backpine/cloudflare": ["../../packages/cloudflare/src/index.ts"],

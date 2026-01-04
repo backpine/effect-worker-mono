@@ -3,28 +3,10 @@
  *
  * @module
  */
-import { HttpApiBuilder } from "@effect/platform";
-import { DateTime, Effect } from "effect";
-import { WorkerApi } from "@backpine/contracts";
-import { PgDrizzle } from "@effect/sql-drizzle/Pg";
-
-import type { UserId, Email, User } from "@backpine/domain";
-import { UserCreationError, UserNotFoundError } from "@backpine/domain";
-import { users } from "@/db";
-import { eq } from "drizzle-orm";
-
-/**
- * Convert database user id to UserId format.
- */
-const toUserId = (id: number): UserId => `usr_${id}` as UserId;
-
-/**
- * Parse UserId to extract the database id.
- */
-const parseUserId = (id: UserId): number | null => {
-  const match = id.match(/^usr_(\d+)$/);
-  return match ? parseInt(match[1]!, 10) : null;
-};
+import { HttpApiBuilder } from "@effect/platform"
+import { Effect } from "effect"
+import { WorkerApi } from "@backpine/contracts"
+import { UserQueries } from "@backpine/db"
 
 /**
  * Users endpoint handler implementation.
@@ -37,89 +19,11 @@ export const UsersGroupLive = HttpApiBuilder.group(
       return handlers
         .handle("list", () =>
           Effect.gen(function* () {
-            const drizzle = yield* PgDrizzle;
-            const dbUsers = yield* drizzle
-              .select()
-              .from(users)
-              .pipe(Effect.orElseSucceed(() => []));
-
-            const userList: User[] = dbUsers.map(
-              (u: typeof users.$inferSelect) => ({
-                id: toUserId(u.id),
-                email: u.email as Email,
-                name: u.name,
-                createdAt: DateTime.unsafeFromDate(u.createdAt),
-              }),
-            );
-
-            return {
-              users: userList,
-              total: userList.length,
-            };
-          }),
+            const users = yield* UserQueries.findAllUsers
+            return { users, total: users.length }
+          })
         )
-
-        .handle("get", ({ path: { id } }) =>
-          Effect.gen(function* () {
-            const dbId = parseUserId(id);
-            if (dbId === null) {
-              return yield* Effect.fail(
-                new UserNotFoundError({
-                  id,
-                  message: `Invalid user ID format: ${id}`,
-                }),
-              );
-            }
-
-            const drizzle = yield* PgDrizzle;
-            const result = yield* drizzle
-              .select()
-              .from(users)
-              .where(eq(users.id, dbId))
-              .pipe(Effect.orElseSucceed(() => []));
-
-            const dbUser = result[0];
-            if (!dbUser) {
-              return yield* Effect.fail(
-                new UserNotFoundError({
-                  id,
-                  message: `User not found: ${id}`,
-                }),
-              );
-            }
-
-            return {
-              id: toUserId(dbUser.id),
-              email: dbUser.email as Email,
-              name: dbUser.name,
-              createdAt: DateTime.unsafeFromDate(dbUser.createdAt),
-            } satisfies User;
-          }),
-        )
-
-        .handle("create", ({ payload: { email, name } }) =>
-          Effect.gen(function* () {
-            const drizzle = yield* PgDrizzle;
-            const result = yield* drizzle
-              .insert(users)
-              .values({ email, name })
-              .returning()
-              .pipe(
-                Effect.mapError(() => new UserCreationError({ email, name })),
-              );
-
-            const newUser = result[0];
-            if (!newUser) {
-              return yield* Effect.fail(new UserCreationError({ email, name }));
-            }
-
-            return {
-              id: toUserId(newUser.id),
-              email: newUser.email as Email,
-              name: newUser.name,
-              createdAt: DateTime.unsafeFromDate(newUser.createdAt),
-            } satisfies User;
-          }),
-        );
-    }),
-);
+        .handle("get", ({ path: { id } }) => UserQueries.findUserById(id))
+        .handle("create", ({ payload }) => UserQueries.createUser(payload))
+    })
+)

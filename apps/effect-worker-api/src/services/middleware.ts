@@ -12,8 +12,8 @@ import {
   DatabaseMiddleware,
   DatabaseConnectionError,
 } from "@backpine/contracts";
-import { currentEnv, currentCtx } from "./cloudflare";
-import { LOCAL_DATABASE_URL, makeDrizzle } from "@backpine/cloudflare";
+import { currentEnv, currentCtx } from "@/services/cloudflare";
+import { makeDrizzle } from "@backpine/cloudflare";
 
 /**
  * Live implementation of CloudflareBindingsMiddleware.
@@ -64,8 +64,7 @@ export const DatabaseMiddlewareLive = Layer.effect(
         );
       }
 
-      const connectionString = env.DATABASE_URL ?? LOCAL_DATABASE_URL;
-      return yield* makeDrizzle(connectionString);
+      return yield* makeDrizzle(env.HYPERDRIVE.connectionString);
     }).pipe(
       Effect.catchAll((error) =>
         Effect.fail(

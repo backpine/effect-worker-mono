@@ -11,21 +11,7 @@
     "LOG_LEVEL": "info"
   },
 
-  // KV Namespace binding
-  "kv_namespaces": [
-    {
-      "binding": "MY_KV",
-      "id": "your-kv-namespace-id"
-    }
-  ],
 
-  // R2 Bucket binding
-  "r2_buckets": [
-    {
-      "binding": "MY_BUCKET",
-      "bucket_name": "effect-worker-storage"
-    }
-  ],
 
   // Hyperdrive for database connection pooling
   "hyperdrive": [

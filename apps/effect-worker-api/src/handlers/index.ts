@@ -4,11 +4,11 @@
  * @module
  */
 import { Layer } from "effect"
-import { HealthGroupLive } from "./health.js"
-import { UsersGroupLive } from "./users.js"
+import { HealthGroupLive } from "@/handlers/health"
+import { UsersGroupLive } from "@/handlers/users"
 
-export { HealthGroupLive } from "./health.js"
-export { UsersGroupLive } from "./users.js"
+export { HealthGroupLive } from "@/handlers/health"
+export { UsersGroupLive } from "@/handlers/users"
 
 /**
  * Combined layer of all HTTP group handlers.

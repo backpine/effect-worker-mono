@@ -5,7 +5,7 @@
  *
  * @module
  */
-import { runtime, handleRequest, openApiSpec } from "./runtime.js"
+import { runtime, handleRequest, openApiSpec } from "@/runtime"
 import { withCloudflareBindings } from "@/services"
 
 /**

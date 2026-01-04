@@ -11,11 +11,10 @@ import {
   CloudflareBindingsError,
   DatabaseConnectionError,
   makeDrizzle,
-  LOCAL_DATABASE_URL,
 
 } from "@backpine/cloudflare"
 import { RpcCloudflareMiddleware, RpcDatabaseMiddleware } from "@backpine/contracts"
-import { currentEnv, currentCtx } from "./cloudflare"
+import { currentEnv, currentCtx } from "@/services/cloudflare"
 
 // ============================================================================
 // Cloudflare Middleware Implementation
@@ -73,8 +72,8 @@ export const RpcDatabaseMiddlewareLive = Layer.succeed(
         )
       }
 
-      const connectionString = env.DATABASE_URL ?? LOCAL_DATABASE_URL
-      return yield* makeDrizzle(connectionString)
+
+      return yield* makeDrizzle(env.HYPERDRIVE.connectionString)
     }).pipe(
       Effect.scoped,
       Effect.catchAll((error) =>

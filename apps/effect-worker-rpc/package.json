@@ -9,10 +9,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "cf-typegen": "wrangler types --env-interface Env",
-    "typecheck": "tsc --noEmit",
-    "build": "tsc && wrangler deploy --dry-run",
-    "db:push": "DATABASE_URL=postgres://postgres:postgres@localhost:5432/effect_worker drizzle-kit push",
-    "db:studio": "DATABASE_URL=postgres://postgres:postgres@localhost:5432/effect_worker drizzle-kit studio"
+    "check": "tsc --noEmit",
+    "build": "tsc && wrangler deploy --dry-run"
   },
   "dependencies": {
     "@backpine/cloudflare": "workspace:^",
@@ -31,7 +29,6 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241127.0",
     "@types/node": "^22.0.0",
-    "drizzle-kit": "^0.31.8",
     "typescript": "^5.7.0",
     "vitest": "^2.1.0",
     "wrangler": "^4.55.0"
