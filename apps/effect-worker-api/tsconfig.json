@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "types": ["@cloudflare/workers-types", "node"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "noUnusedLocals": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": false,
+    "paths": {
+      "@/db": ["./src/db/index.ts"],
+      "@/db/*": ["./src/db/*"],
+      "@/handlers": ["./src/handlers/index.ts"],
+      "@/handlers/*": ["./src/handlers/*"],
+      "@/services": ["./src/services/index.ts"],
+      "@/services/*": ["./src/services/*"],
+      "@backpine/domain": ["../../packages/domain/src/index.ts"],
+      "@backpine/domain/*": ["../../packages/domain/src/*"],
+      "@backpine/api": ["../../packages/api/src/index.ts"],
+      "@backpine/api/*": ["../../packages/api/src/*"]
+    },
+    "baseUrl": "."
+  },
+  "include": ["src/**/*", "test/**/*", "worker-configuration.d.ts"],
+  "exclude": ["node_modules", "dist"]
+}

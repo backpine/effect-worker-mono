@@ -1,0 +1,36 @@
+{
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.14.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "clean": "node scripts/clean.mjs",
+    "codegen": "pnpm --recursive --parallel run codegen",
+    "build": "tsc -b tsconfig.build.json && pnpm --recursive --parallel run build",
+    "check": "tsc -b tsconfig.json",
+    "check-recursive": "pnpm --recursive exec tsc -b tsconfig.json",
+    "test": "vitest",
+    "coverage": "vitest --coverage"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.25.9",
+    "@babel/core": "^7.26.0",
+    "@babel/plugin-transform-export-namespace-from": "^7.25.9",
+    "@babel/plugin-transform-modules-commonjs": "^7.25.9",
+    "@effect/build-utils": "^0.7.7",
+    "@effect/language-service": "latest",
+    "@effect/vitest": "latest",
+    "@types/node": "^22.8.5",
+    "babel-plugin-annotate-pure-calls": "^0.5.0",
+    "effect": "^3.10.7",
+    "glob": "^11.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^3.2.0"
+  },
+  "pnpm": {
+    "patchedDependencies": {}
+  }
+}
