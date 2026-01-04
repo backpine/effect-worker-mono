@@ -3,10 +3,5 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "include": [],
-  "references": [
-    { "path": "packages/cli" },
-    { "path": "packages/domain" },
-    { "path": "packages/server" }
-  ]
+  "include": ["packages/*/src", "packages/*/test"]
 }

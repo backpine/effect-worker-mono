@@ -7,4 +7,4 @@
  *
  * @module
  */
-export { users, type User, type NewUser } from "./schema.js"
+export { users, type User, type NewUser } from "./schema"

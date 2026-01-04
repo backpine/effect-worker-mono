@@ -8,14 +8,14 @@
  */
 import { Effect, FiberRef, Layer } from "effect"
 import {
-  CloudflareBindings,
   CloudflareBindingsError,
-  DatabaseService,
-  DatabaseConnectionError
+  DatabaseConnectionError,
+  makeDrizzle,
+  LOCAL_DATABASE_URL,
+
 } from "@backpine/cloudflare"
-import { RpcCloudflareMiddleware, RpcDatabaseMiddleware } from "@backpine/rpc"
-import { currentEnv, currentCtx } from "./cloudflare.js"
-import { makeDatabaseConnection, LOCAL_DATABASE_URL, type DrizzleInstance } from "./database.js"
+import { RpcCloudflareMiddleware, RpcDatabaseMiddleware } from "@backpine/contracts"
+import { currentEnv, currentCtx } from "./cloudflare"
 
 // ============================================================================
 // Cloudflare Middleware Implementation
@@ -56,16 +56,11 @@ export const RpcCloudflareMiddlewareLive = Layer.succeed(
  *
  * Creates a scoped database connection per-request.
  * The connection is automatically closed when the request scope ends.
- *
- * Note: The middleware returns a scoped Effect. The RpcServer provides
- * the Scope at runtime when executing handlers.
  */
 export const RpcDatabaseMiddlewareLive = Layer.succeed(
   RpcDatabaseMiddleware,
   // Middleware function runs per-RPC-call
-  // Note: Type cast needed because RpcMiddleware doesn't include Scope in type,
-  // but RpcServer runs handlers in a scoped context
-  (() =>
+  () =>
     Effect.gen(function* () {
       // Get connection string from Cloudflare env via FiberRef
       const env = yield* FiberRef.get(currentEnv)
@@ -79,8 +74,9 @@ export const RpcDatabaseMiddlewareLive = Layer.succeed(
       }
 
       const connectionString = env.DATABASE_URL ?? LOCAL_DATABASE_URL
-      return yield* makeDatabaseConnection(connectionString)
+      return yield* makeDrizzle(connectionString)
     }).pipe(
+      Effect.scoped,
       Effect.catchAll((error) =>
         Effect.fail(
           new DatabaseConnectionError({
@@ -88,8 +84,5 @@ export const RpcDatabaseMiddlewareLive = Layer.succeed(
           })
         )
       )
-    )) as unknown as () => Effect.Effect<
-    { readonly db: DrizzleInstance },
-    DatabaseConnectionError
-  >
+    )
 )

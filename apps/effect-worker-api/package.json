@@ -15,7 +15,7 @@
     "db:studio": "DATABASE_URL=postgres://postgres:postgres@localhost:5432/effect_worker drizzle-kit studio"
   },
   "dependencies": {
-    "@backpine/api": "workspace:^",
+    "@backpine/contracts": "workspace:^",
     "@backpine/cloudflare": "workspace:^",
     "@backpine/db": "workspace:^",
     "@backpine/domain": "workspace:^",

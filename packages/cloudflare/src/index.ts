@@ -7,9 +7,9 @@
  * with Effect, including:
  *
  * - FiberRef bridge for request-scoped bindings
- * - Service tags for CloudflareBindings and DatabaseService
+ * - Service tag for CloudflareBindings
  * - Error types for middleware
- * - Database connection factory
+ * - PgDrizzle connection factory
  *
  * @module
  */
@@ -21,18 +21,17 @@ export {
   withCloudflareBindings,
   waitUntil,
   type WorkerExecutionContext
-} from "./FiberRef.js"
+} from "./fiber-ref"
 
 // Service tags
-export { CloudflareBindings, DatabaseService } from "./Services.js"
+export { CloudflareBindings } from "./services"
 
 // Error types
-export { CloudflareBindingsError, DatabaseConnectionError } from "./Errors.js"
+export { CloudflareBindingsError, DatabaseConnectionError } from "./errors"
 
 // Database utilities
 export {
-  makeDatabaseConnection,
+  makeDrizzle,
   LOCAL_DATABASE_URL,
-  PgDrizzle,
-  type DrizzleInstance
-} from "./Database.js"
+  PgDrizzle
+} from "./database"

@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "lib": ["ES2022"],
     "types": ["@cloudflare/workers-types", "node"],
     "strict": true,
@@ -26,8 +26,8 @@
       "@/handlers/*": ["./src/handlers/*"],
       "@/services": ["./src/services/index.ts"],
       "@/services/*": ["./src/services/*"],
-      "@backpine/api": ["../../packages/api/src/index.ts"],
-      "@backpine/api/*": ["../../packages/api/src/*"],
+      "@backpine/contracts": ["../../packages/contracts/src/index.ts"],
+      "@backpine/contracts/*": ["../../packages/contracts/src/*"],
       "@backpine/cloudflare": ["../../packages/cloudflare/src/index.ts"],
       "@backpine/cloudflare/*": ["../../packages/cloudflare/src/*"],
       "@backpine/db": ["../../packages/db/src/index.ts"],

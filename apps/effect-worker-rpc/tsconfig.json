@@ -19,8 +19,8 @@
       "@backpine/db/*": ["../../packages/db/src/*"],
       "@backpine/domain": ["../../packages/domain/src/index.ts"],
       "@backpine/domain/*": ["../../packages/domain/src/*"],
-      "@backpine/rpc": ["../../packages/rpc/src/index.ts"],
-      "@backpine/rpc/*": ["../../packages/rpc/src/*"]
+      "@backpine/contracts": ["../../packages/contracts/src/index.ts"],
+      "@backpine/contracts/*": ["../../packages/contracts/src/*"]
     }
   },
   "include": ["src/**/*.ts", "worker-configuration.d.ts"],

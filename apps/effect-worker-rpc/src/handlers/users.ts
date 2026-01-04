@@ -2,13 +2,12 @@
  * Users RPC Handlers
  *
  * Handler implementations for the users RPC procedures.
- * Uses DatabaseService provided by RpcDatabaseMiddleware.
  *
  * @module
  */
 import { DateTime, Effect } from "effect"
-import { UsersRpc } from "@backpine/rpc"
-import { DatabaseService, type DrizzleInstance } from "@backpine/cloudflare"
+import { PgDrizzle } from "@effect/sql-drizzle/Pg"
+import { UsersRpc } from "@backpine/contracts"
 import { users } from "@backpine/db"
 import { eq } from "drizzle-orm"
 
@@ -29,14 +28,6 @@ const parseUserId = (id: string): number | null => {
   return match ? parseInt(match[1]!, 10) : null
 }
 
-/**
- * Get typed database instance from DatabaseService.
- */
-const getDb = Effect.gen(function* () {
-  const { db } = yield* DatabaseService
-  return db as DrizzleInstance
-})
-
 // ============================================================================
 // Handler Implementation
 // ============================================================================
@@ -56,15 +47,13 @@ export const UsersRpcHandlersLive = UsersRpc.toLayer({
         })
       }
 
-      const db = yield* getDb
-      const result = yield* Effect.tryPromise({
-        try: () => db.select().from(users).where(eq(users.id, dbId)),
-        catch: () => ({
-          _tag: "UserNotFound" as const,
-          id,
-          message: `User not found: ${id}`
-        })
-      })
+      const drizzle = yield* PgDrizzle
+      const result = yield* drizzle
+        .select()
+        .from(users)
+        .where(eq(users.id, dbId))
+        .pipe(Effect.orElseSucceed(() => []))
+
       const dbUser = result[0]
 
       if (!dbUser) {
@@ -85,10 +74,11 @@ export const UsersRpcHandlersLive = UsersRpc.toLayer({
 
   listUsers: () =>
     Effect.gen(function* () {
-      const db = yield* getDb
-      const dbUsers = yield* Effect.tryPromise(() => db.select().from(users)).pipe(
-        Effect.orElseSucceed(() => [] as typeof users.$inferSelect[])
-      )
+      const drizzle = yield* PgDrizzle
+      const dbUsers = yield* drizzle
+        .select()
+        .from(users)
+        .pipe(Effect.orElseSucceed(() => []))
 
       return {
         users: dbUsers.map((u) => ({
@@ -103,14 +93,18 @@ export const UsersRpcHandlersLive = UsersRpc.toLayer({
 
   createUser: ({ email, name }) =>
     Effect.gen(function* () {
-      const db = yield* getDb
-      const result = yield* Effect.tryPromise({
-        try: () => db.insert(users).values({ email, name }).returning(),
-        catch: () => ({
-          _tag: "DuplicateEmail" as const,
-          email
-        })
-      })
+      const drizzle = yield* PgDrizzle
+      const result = yield* drizzle
+        .insert(users)
+        .values({ email, name })
+        .returning()
+        .pipe(
+          Effect.mapError(() => ({
+            _tag: "DuplicateEmail" as const,
+            email
+          }))
+        )
+
       const newUser = result[0]
 
       if (!newUser) {

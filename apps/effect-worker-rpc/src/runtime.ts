@@ -29,7 +29,7 @@
 import { Effect, Layer, ManagedRuntime } from "effect"
 import { HttpServer, HttpServerRequest, HttpServerResponse } from "@effect/platform"
 import { RpcServer, RpcSerialization } from "@effect/rpc"
-import { UsersRpc } from "@backpine/rpc"
+import { UsersRpc } from "@backpine/contracts"
 import { UsersRpcHandlersLive } from "./handlers/index.js"
 import {
   RpcCloudflareMiddlewareLive,

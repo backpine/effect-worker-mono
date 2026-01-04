@@ -4,24 +4,23 @@
   "type": "module",
   "license": "MIT",
   "description": "Cloudflare Worker infrastructure for Effect",
-  "repository": {
-    "type": "git",
-    "url": "<PLACEHOLDER>",
-    "directory": "packages/cloudflare"
-  },
-  "publishConfig": {
-    "access": "public",
-    "directory": "dist"
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.js"
+    }
   },
   "scripts": {
-    "codegen": "build-utils prepare-v2",
-    "build": "pnpm build-esm && pnpm build-annotate && pnpm build-cjs && build-utils pack-v2",
-    "build-esm": "tsc -b tsconfig.build.json",
-    "build-cjs": "babel build/esm --plugins @babel/transform-export-namespace-from --plugins @babel/transform-modules-commonjs --out-dir build/cjs --source-maps",
-    "build-annotate": "babel build/esm --plugins annotate-pure-calls --out-dir build/esm --source-maps",
-    "check": "tsc -b tsconfig.json",
+    "build": "tsc -p tsconfig.build.json",
+    "check": "tsc --noEmit",
     "test": "vitest",
-    "coverage": "vitest --coverage"
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "@effect/experimental": "latest",
@@ -31,17 +30,5 @@
     "@effect/sql-pg": "latest",
     "drizzle-orm": "^0.45.0",
     "effect": "latest"
-  },
-  "effect": {
-    "generateExports": {
-      "include": [
-        "**/*.ts"
-      ]
-    },
-    "generateIndex": {
-      "include": [
-        "**/*.ts"
-      ]
-    }
   }
 }

@@ -10,17 +10,16 @@ export {
   currentCtx,
   withCloudflareBindings,
   waitUntil
-} from "./cloudflare.js"
+} from "./cloudflare"
 
 export {
-  makeDatabaseConnection,
+  makeDrizzle,
   LOCAL_DATABASE_URL,
-  PgDrizzle,
-  type DrizzleInstance
-} from "./database.js"
+  PgDrizzle
+} from "@backpine/cloudflare"
 
 export {
   CloudflareBindingsMiddlewareLive,
   DatabaseMiddlewareLive,
   MiddlewareLive
-} from "./middleware.js"
+} from "./middleware"

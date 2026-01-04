@@ -1,15 +1,23 @@
 {
-  "name": "@backpine/domain",
+  "name": "@backpine/contracts",
   "version": "0.0.0",
   "type": "module",
   "license": "MIT",
-  "description": "Domain types, schemas, and errors for Effect Worker",
+  "description": "API contract definitions for Effect Worker (HTTP and RPC)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./http": {
+      "types": "./dist/http/index.d.ts",
+      "import": "./dist/http/index.js"
+    },
+    "./rpc": {
+      "types": "./dist/rpc/index.d.ts",
+      "import": "./dist/rpc/index.js"
     },
     "./*": {
       "types": "./dist/*.d.ts",
@@ -24,6 +32,9 @@
   },
   "dependencies": {
     "@effect/platform": "latest",
+    "@effect/rpc": "latest",
+    "@backpine/cloudflare": "workspace:^",
+    "@backpine/domain": "workspace:^",
     "effect": "latest"
   }
 }

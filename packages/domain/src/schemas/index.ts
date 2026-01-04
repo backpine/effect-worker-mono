@@ -13,4 +13,4 @@ export {
   CreateUserSchema,
   type CreateUser,
   UserIdPathSchema
-} from "./User.js"
+} from "./user"

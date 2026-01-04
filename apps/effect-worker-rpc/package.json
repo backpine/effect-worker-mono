@@ -18,7 +18,7 @@
     "@backpine/cloudflare": "workspace:^",
     "@backpine/db": "workspace:^",
     "@backpine/domain": "workspace:^",
-    "@backpine/rpc": "workspace:^",
+    "@backpine/contracts": "workspace:^",
     "@effect/experimental": "latest",
     "@effect/platform": "latest",
     "@effect/rpc": "latest",
