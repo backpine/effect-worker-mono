@@ -1,10 +1,16 @@
 /**
  * @backpine/db
  *
- * Database schema for Effect Worker.
+ * Database schema and queries for Effect Worker.
  *
- * This package contains Drizzle ORM schema definitions shared across all apps.
+ * This package contains Drizzle ORM schema definitions and
+ * reusable Effect query programs shared across all apps.
  *
  * @module
  */
-export { users, type User, type NewUser } from "./schema"
+
+// Schema exports
+export { users, type User as DbUser, type NewUser } from "./schema"
+
+// Query exports
+export * from "./queries"

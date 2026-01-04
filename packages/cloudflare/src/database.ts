@@ -12,11 +12,7 @@ import { PgDrizzle, make as makePgDrizzle } from "@effect/sql-drizzle/Pg"
 import * as Reactivity from "@effect/experimental/Reactivity"
 import * as SqlClient from "@effect/sql/SqlClient"
 
-/**
- * Default database URL for local development.
- */
-export const LOCAL_DATABASE_URL =
-  "postgres://postgres:postgres@localhost:5432/effect_worker"
+
 
 /**
  * Creates a scoped PgDrizzle instance for request-scoped database access.

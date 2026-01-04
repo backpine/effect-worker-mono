@@ -32,6 +32,5 @@ export { CloudflareBindingsError, DatabaseConnectionError } from "./errors"
 // Database utilities
 export {
   makeDrizzle,
-  LOCAL_DATABASE_URL,
   PgDrizzle
 } from "./database"

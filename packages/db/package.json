@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "license": "MIT",
-  "description": "Database schema for Effect Worker",
+  "description": "Database schema and queries for Effect Worker",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -20,9 +20,19 @@
     "build": "tsc -p tsconfig.build.json",
     "check": "tsc --noEmit",
     "test": "vitest",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
-    "drizzle-orm": "^0.45.0"
+    "drizzle-orm": "^0.45.0",
+    "effect": "latest",
+    "@effect/sql-drizzle": "latest",
+    "@backpine/domain": "workspace:*"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.8"
   }
 }
