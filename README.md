@@ -20,10 +20,10 @@ pnpm dev              # Start dev server
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Applications                              │
-│  ┌──────────────────────┐    ┌──────────────────────┐          │
-│  │  effect-worker-api   │    │   effect-worker-rpc  │          │
-│  │    (HTTP REST)       │    │     (RPC JSON)       │          │
-│  └──────────────────────┘    └──────────────────────┘          │
+│  ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐│
+│  │effect-worker-api │ │ effect-worker-rpc│ │  tanstack-start  ││
+│  │   (HTTP REST)    │ │    (RPC JSON)    │ │  (Full-Stack UI) ││
+│  └──────────────────┘ └──────────────────┘ └──────────────────┘│
 ├─────────────────────────────────────────────────────────────────┤
 │                     Shared Packages                              │
 │  ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌──────────────┐    │
@@ -110,6 +110,56 @@ pnpm deploy     # Deploy to Cloudflare
 - `GET /health` - Health check
 - `POST /rpc` - RPC endpoint
 
+### `tanstack-start`
+Full-stack React application with TanStack Start, featuring Effect-TS integration via middleware.
+
+```bash
+cd apps/tanstack-start
+pnpm dev        # Local dev server (port 3000)
+pnpm deploy     # Deploy to Cloudflare
+```
+
+**Features:**
+- TanStack Router (file-based routing)
+- TanStack Query (server state management)
+- Effect runtime middleware for server functions
+- Tailwind CSS v4 + Shadcn/UI components
+
+**Effect Integration Pattern:**
+```typescript
+// Middleware creates scoped Effect runtime per-request
+export const effectRuntimeMiddleware = createMiddleware().server(
+  async ({ next }) => {
+    const servicesLayer = Layer.mergeAll(/* your services */)
+    return Effect.runPromise(
+      Effect.scoped(
+        Effect.gen(function* () {
+          const runtime = yield* Layer.toRuntime(servicesLayer)
+          const runEffect = <A, E>(effect: Effect.Effect<A, E, Services>) =>
+            Runtime.runPromise(runtime)(effect)
+          return yield* Effect.tryPromise({
+            try: () => next({ context: { env, runEffect } }),
+            catch: (e) => { throw e }
+          })
+        })
+      )
+    )
+  }
+)
+
+// Server functions use runEffect to execute Effect programs
+export const myFunction = createServerFn()
+  .middleware([effectRuntimeMiddleware])
+  .handler(async ({ context }) => {
+    return context.runEffect(
+      Effect.gen(function* () {
+        const db = yield* PgDrizzle
+        return yield* db.select().from(users)
+      })
+    )
+  })
+```
+
 ## Core Patterns
 
 ### FiberRef Bridge
@@ -191,7 +241,16 @@ effect-worker-mono/
 │   │   │   ├── handlers/      # Handler implementations
 │   │   │   └── services/      # Middleware implementations
 │   │   └── wrangler.jsonc     # Cloudflare config
-│   └── effect-worker-rpc/     # RPC API
+│   ├── effect-worker-rpc/     # RPC API
+│   └── tanstack-start/        # Full-stack React app
+│       ├── src/
+│       │   ├── routes/        # File-based routes
+│       │   ├── components/    # React components
+│       │   └── server/        # Server-side code
+│       │       ├── middleware/  # Effect runtime middleware
+│       │       ├── functions/   # Server functions
+│       │       └── types.ts     # Effect service types
+│       └── wrangler.jsonc     # Cloudflare config
 ├── packages/
 │   ├── domain/                # Domain types & schemas
 │   │   └── src/
@@ -282,6 +341,7 @@ return yield* makeDrizzle(env.HYPERDRIVE.connectionString)
 | Framework | Effect-TS |
 | HTTP | @effect/platform |
 | RPC | @effect/rpc |
+| Full-Stack UI | TanStack Start + TanStack Router + TanStack Query |
 | Database | Drizzle ORM + PostgreSQL |
 | Build | pnpm workspaces + TypeScript |
 | Testing | Vitest + @effect/vitest |
@@ -293,6 +353,9 @@ return yield* makeDrizzle(env.HYPERDRIVE.connectionString)
 - **@effect/platform** - HTTP server & middleware
 - **@effect/rpc** - RPC protocol
 - **@effect/sql-drizzle** - Database integration
+- **@tanstack/react-start** - Full-stack React framework
+- **@tanstack/react-router** - Type-safe file-based routing
+- **@tanstack/react-query** - Server state management
 - **drizzle-orm** - Type-safe ORM
 - **wrangler** - Cloudflare Workers CLI
 

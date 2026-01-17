@@ -1,6 +1,6 @@
 # TanStack Start on Cloudflare
 
-A modern, full-stack React application built with TanStack Start and deployed on Cloudflare Workers. This template showcases server functions, middleware, type-safe data fetching, and seamless integration with Cloudflare's edge computing platform.
+A modern, full-stack React application built with TanStack Start and deployed on Cloudflare Workers. This template showcases server functions, middleware, type-safe data fetching, Effect-TS integration, and seamless integration with Cloudflare's edge computing platform.
 
 [![TanStack Start on Cloudflare](https://img.youtube.com/vi/TWWS_lo4kOA/0.jpg)](https://www.youtube.com/watch?v=TWWS_lo4kOA)
 
@@ -179,85 +179,151 @@ The `<TanStackRouterDevtools />` component is not required so you can remove it 
 More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
 
 
-## 🔄 Data Fetching & Server Functions
+## 🔄 Effect-TS Integration
 
-This template demonstrates modern server-side patterns with TanStack Start's server functions, middleware, and seamless client integration.
+This template includes Effect-TS integration via a middleware pattern that creates a scoped runtime for each request.
 
-### Server Functions with Middleware
+### Effect Runtime Middleware
 
-Server functions run exclusively on the server and maintain type safety across network boundaries:
+The `effectRuntimeMiddleware` creates a per-request Effect runtime that provides services to all handlers. The runtime is scoped to the request lifecycle, ensuring proper resource cleanup.
 
 ```typescript
-// src/core/middleware/example-middleware.ts
-export const exampleMiddleware = createMiddleware({
-  type: 'function'
-}).server(async ({ next }) => {
-  console.log('Middleware executing on server');
-  return next({
-    context: {
-      data: 'Context from middleware'
-    }
-  });
-});
+// src/server/middleware/effect-runtime.ts
+export const effectRuntimeMiddleware = createMiddleware().server(
+  async ({ next }) => {
+    // Define service layers (add PgDrizzle, custom services, etc.)
+    const servicesLayer = Layer.empty
 
-// src/core/functions/example-functions.ts
-const ExampleInputSchema = z.object({
-  exampleKey: z.string().min(1),
-});
+    return Effect.runPromise(
+      Effect.scoped(
+        Effect.gen(function* () {
+          const runtime = yield* Layer.toRuntime(servicesLayer)
 
-type ExampleInput = z.infer<typeof ExampleInputSchema>;
+          const runEffect = <A, E>(effect: Effect.Effect<A, E, EffectServices>) => {
+            return Runtime.runPromise(runtime)(effect)
+          }
 
-const baseFunction = createServerFn().middleware([
-  exampleMiddleware,
-]);
+          return yield* Effect.tryPromise({
+            try: async () => await next({ context: { env, runEffect } }),
+            catch: (error) => { throw error }
+          })
+        })
+      )
+    )
+  }
+)
+```
 
-export const exampleFunction = baseFunction
-  .inputValidator((data: ExampleInput) => ExampleInputSchema.parse(data))
-  .handler(async (ctx) => {
-    // Access validated input: ctx.data
-    // Access middleware context: ctx.context
-    // Access Cloudflare env: env.MY_VAR
-    return 'Server response';
-  });
+### Server Functions with Effect
+
+Server functions use the middleware to access `runEffect` for executing Effect programs:
+
+```typescript
+// src/server/functions/example-effect-function.ts
+const effectFunction = createServerFn().middleware([effectRuntimeMiddleware])
+
+export const greetingFunction = effectFunction
+  .inputValidator(validateWith(GreetingRequestSchema))
+  .handler(async ({ data, context }) => {
+    return context.runEffect(
+      Effect.gen(function* () {
+        yield* Effect.log(`Processing: ${data.name}`)
+
+        // Access services via yield*
+        // const db = yield* PgDrizzle
+
+        return {
+          message: `Hello, ${data.name}!`,
+          timestamp: new Date().toISOString()
+        }
+      })
+    )
+  })
+```
+
+### Adding Services (e.g., Database)
+
+To add services like `PgDrizzle` from `@repo/cloudflare`:
+
+1. **Update the middleware** (`src/server/middleware/effect-runtime.ts`):
+```typescript
+import { PgDrizzle, makeDrizzle } from "@repo/cloudflare"
+
+const dbLayer = Layer.scoped(
+  PgDrizzle,
+  makeDrizzle(env.HYPERDRIVE.connectionString)
+)
+const servicesLayer = Layer.mergeAll(dbLayer)
+```
+
+2. **Update the types** (`src/server/types.ts`):
+```typescript
+import type { PgDrizzle } from "@repo/cloudflare"
+
+export type EffectServices = PgDrizzle // Add more services with |
+```
+
+3. **Use in handlers**:
+```typescript
+return context.runEffect(
+  Effect.gen(function* () {
+    const db = yield* PgDrizzle
+    return yield* db.select().from(users)
+  })
+)
 ```
 
 ### Client Integration with TanStack Query
 
-Server functions integrate seamlessly with TanStack Query for optimal UX:
+Server functions integrate seamlessly with TanStack Query:
 
 ```tsx
-import { useMutation } from '@tanstack/react-query';
-import { exampleFunction } from '@/core/functions/example-functions';
+import { useMutation } from '@tanstack/react-query'
+import { greetingFunction } from '@/server/functions/example-effect-function'
 
 function MyComponent() {
   const mutation = useMutation({
-    mutationFn: exampleFunction,
+    mutationFn: (input: { name: string }) => greetingFunction({ data: input }),
     onSuccess: (data) => console.log('Success:', data),
     onError: (error) => console.error('Error:', error),
-  });
+  })
 
   return (
     <button
-      onClick={() => mutation.mutate({ exampleKey: 'Hello Server!' })}
+      onClick={() => mutation.mutate({ name: 'World' })}
       disabled={mutation.isPending}
     >
-      {mutation.isPending ? 'Loading...' : 'Call Server Function'}
+      {mutation.isPending ? 'Loading...' : 'Run Effect'}
     </button>
-  );
+  )
 }
 ```
 
 ### Key Benefits
 
-- **🔒 Type-Safe**: Full TypeScript support with Zod validation
-- **🚀 Server-First**: Secure server-side logic with client convenience
-- **⚡ Edge Computing**: Runs on Cloudflare's global edge network
-- **🔄 Seamless Integration**: Works perfectly with TanStack Query
-- **🧩 Composable**: Middleware chains for auth, logging, validation
+- **🎯 Type-Safe**: Full TypeScript support with Effect Schema validation
+- **🔄 Scoped Runtime**: Per-request Effect runtime with proper resource cleanup
+- **⚡ Edge Computing**: Effect programs run on Cloudflare's global edge
+- **🧩 Composable Services**: Easily add database, auth, logging services
+- **🔒 Server-First**: Secure server-side logic with client convenience
+
+### Project Structure
+
+```
+src/server/
+├── middleware/
+│   ├── effect-runtime.ts   # Effect runtime middleware
+│   └── index.ts            # Middleware exports
+├── functions/
+│   ├── example-effect-function.ts  # Example Effect server function
+│   └── index.ts                    # Function exports
+├── types.ts                # EffectServices, EffectContext types
+└── index.ts                # Server exports
+```
 
 ### Interactive Demo
 
-This template includes a live demo showcasing the middleware and server function patterns. Check your server logs when running the demo to see the execution flow!
+This template includes a live demo showcasing the Effect server function patterns. Check your server logs when running the demo to see Effect's structured logging!
 
 ## 🧪 Testing
 
@@ -280,6 +346,7 @@ This template includes the latest and greatest from the React ecosystem:
 - **TanStack Start** - Full-stack React framework with SSR
 - **React 19** - Latest React with concurrent features
 - **TypeScript** - Strict type checking enabled
+- **Effect-TS** - Type-safe functional programming and service composition
 
 ### **Routing & Data**
 - **TanStack Router** - Type-safe, file-based routing
@@ -304,6 +371,7 @@ This template includes the latest and greatest from the React ecosystem:
 - **[TanStack Start](https://tanstack.com/start)** - Full-stack React framework
 - **[TanStack Router](https://tanstack.com/router)** - Type-safe routing
 - **[TanStack Query](https://tanstack.com/query)** - Server state management
+- **[Effect-TS](https://effect.website/)** - Type-safe functional effects
 - **[Cloudflare Workers](https://workers.cloudflare.com/)** - Edge computing platform
 - **[Shadcn/UI](https://ui.shadcn.com/)** - Component library
 - **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS
