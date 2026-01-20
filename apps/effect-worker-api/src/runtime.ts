@@ -28,7 +28,7 @@ const ApiLayer = Layer.mergeAll(
   HttpApiBuilder.Middleware.layer,
   HttpServer.layerContext,
   HttpApiScalar.layer({ path: "/docs" }).pipe(Layer.provide(ApiLive))
-).pipe(Layer.provide(MiddlewareLive))
+).pipe(Layer.provideMerge(MiddlewareLive))
 
 /**
  * Shared runtime instance.
@@ -67,4 +67,3 @@ export const handleRequest = (request: Request) =>
 
     return ServerResponse.toWeb(response)
   })
-
