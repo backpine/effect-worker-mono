@@ -6,7 +6,7 @@
  * @module
  */
 import { Effect, Layer, ManagedRuntime } from "effect"
-import { HttpApiBuilder, HttpServer, OpenApi } from "@effect/platform"
+import { HttpApiBuilder, HttpApiScalar, HttpServer } from "@effect/platform"
 import * as ServerRequest from "@effect/platform/HttpServerRequest"
 import * as ServerResponse from "@effect/platform/HttpServerResponse"
 import { WorkerApi } from "@repo/contracts"
@@ -20,11 +20,14 @@ import { MiddlewareLive } from "@/services"
  * Middleware layers are provided here so their implementations are available,
  * but the middleware effects run per-request.
  */
+const ApiLive = HttpApiBuilder.api(WorkerApi).pipe(Layer.provide(HttpGroupsLive))
+
 const ApiLayer = Layer.mergeAll(
-  HttpApiBuilder.api(WorkerApi).pipe(Layer.provide(HttpGroupsLive)),
+  ApiLive,
   HttpApiBuilder.Router.Live,
   HttpApiBuilder.Middleware.layer,
-  HttpServer.layerContext
+  HttpServer.layerContext,
+  HttpApiScalar.layer({ path: "/docs" }).pipe(Layer.provide(ApiLive))
 ).pipe(Layer.provide(MiddlewareLive))
 
 /**
@@ -65,9 +68,3 @@ export const handleRequest = (request: Request) =>
     return ServerResponse.toWeb(response)
   })
 
-/**
- * OpenAPI specification for the API.
- *
- * Generated from the WorkerApi definition.
- */
-export const openApiSpec = OpenApi.fromApi(WorkerApi)
