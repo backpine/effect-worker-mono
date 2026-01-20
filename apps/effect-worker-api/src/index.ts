@@ -5,7 +5,7 @@
  *
  * @module
  */
-import { runtime, handleRequest, openApiSpec } from "@/runtime"
+import { runtime, handleRequest } from "@/runtime"
 import { withCloudflareBindings } from "@/services"
 
 /**
@@ -13,14 +13,6 @@ import { withCloudflareBindings } from "@/services"
  */
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
-    const url = new URL(request.url)
-
-    // Serve OpenAPI spec at /api/openapi.json
-    if (url.pathname === "/api/openapi.json") {
-      return Response.json(openApiSpec)
-    }
-
-    // HTTP REST API
     // Handle request with Cloudflare bindings available via FiberRef
     const effect = handleRequest(request).pipe(withCloudflareBindings(env, ctx))
 
