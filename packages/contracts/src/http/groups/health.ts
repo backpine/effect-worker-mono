@@ -5,7 +5,7 @@
  *
  * @module
  */
-import { HttpApiEndpoint, HttpApiGroup } from "@effect/platform"
+import { HttpApiEndpoint, HttpApiGroup } from "effect/unstable/httpapi"
 import { Schema as S } from "effect"
 
 /**
@@ -21,5 +21,5 @@ export type HealthResponse = typeof HealthResponseSchema.Type
  * Health endpoint group definition.
  */
 export const HealthGroup = HttpApiGroup.make("health")
-  .add(HttpApiEndpoint.get("check", "/").addSuccess(HealthResponseSchema))
+  .add(HttpApiEndpoint.get("check", "/", { success: HealthResponseSchema }))
   .prefix("/health")

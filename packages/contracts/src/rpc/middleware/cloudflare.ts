@@ -2,15 +2,13 @@
  * Cloudflare Bindings RPC Middleware Tag
  *
  * RpcMiddleware tag that provides CloudflareBindings to RPC handlers.
- * The implementation is provided by the app using FiberRefs.
+ * The implementation is provided by the app using ServiceMap.Reference.
  *
  * @module
  */
-import { RpcMiddleware } from "@effect/rpc"
-import {
-  CloudflareBindings,
-  CloudflareBindingsError
-} from "@repo/cloudflare"
+import { RpcMiddleware } from "effect/unstable/rpc"
+import { CloudflareBindings } from "../../services"
+import { CloudflareBindingsError } from "@repo/domain"
 
 /**
  * Middleware that provides CloudflareBindings to RPC handlers.
@@ -24,10 +22,10 @@ import {
  *
  * Implementation is provided by the app layer.
  */
-export class RpcCloudflareMiddleware extends RpcMiddleware.Tag<RpcCloudflareMiddleware>()(
-  "@repo/rpc/RpcCloudflareMiddleware",
-  {
-    failure: CloudflareBindingsError,
-    provides: CloudflareBindings
-  }
-) {}
+export class RpcCloudflareMiddleware extends RpcMiddleware.Service<
+  RpcCloudflareMiddleware,
+  { provides: CloudflareBindings }
+>()("@repo/rpc/RpcCloudflareMiddleware", {
+  error: CloudflareBindingsError,
+  requiredForClient: false
+}) {}

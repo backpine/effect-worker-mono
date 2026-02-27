@@ -3,7 +3,7 @@
  *
  * @module
  */
-import { HttpApiBuilder } from "@effect/platform"
+import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { Effect } from "effect"
 import { WorkerApi } from "@repo/contracts"
 import { UserQueries } from "@repo/db"
@@ -15,15 +15,13 @@ export const UsersGroupLive = HttpApiBuilder.group(
   WorkerApi,
   "users",
   (handlers) =>
-    Effect.gen(function* () {
-      return handlers
-        .handle("list", () =>
-          Effect.gen(function* () {
-            const users = yield* UserQueries.findAllUsers
-            return { users, total: users.length }
-          })
-        )
-        .handle("get", ({ path: { id } }) => UserQueries.findUserById(id))
-        .handle("create", ({ payload }) => UserQueries.createUser(payload))
-    })
+    handlers
+      .handle("list", () =>
+        Effect.gen(function* () {
+          const users = yield* UserQueries.findAllUsers
+          return { users, total: users.length }
+        })
+      )
+      .handle("get", ({ params: { id } }) => UserQueries.findUserById(id))
+      .handle("create", ({ payload }) => UserQueries.createUser(payload))
 )

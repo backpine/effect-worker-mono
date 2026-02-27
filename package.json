@@ -7,17 +7,16 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "pnpm --filter '@repo/domain' run build && pnpm --filter '@repo/db' --filter '@repo/cloudflare' run build && pnpm --filter '@repo/contracts' run build",
+    "build": "pnpm --filter '@repo/domain' run build && pnpm --filter '@repo/db' run build && pnpm --filter '@repo/contracts' run build",
     "check": "pnpm -r run check",
     "clean": "pnpm --filter './packages/*' run clean",
     "test": "vitest",
     "coverage": "vitest --coverage"
   },
   "devDependencies": {
-    "@effect/language-service": "latest",
-    "@effect/vitest": "latest",
+    "@effect/vitest": "catalog:",
     "@types/node": "^22.8.5",
-    "effect": "^3.10.7",
+    "effect": "catalog:",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3",
     "vitest": "^3.2.0"

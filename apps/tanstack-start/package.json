@@ -10,8 +10,7 @@
     "cf-typegen": "wrangler types --env-interface Env"
   },
   "dependencies": {
-    "@repo/cloudflare": "workspace:*",
-    "effect": "latest",
+    "effect": "catalog:",
     "@radix-ui/react-collapsible": "^1.1.12",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",

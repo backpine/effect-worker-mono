@@ -2,18 +2,20 @@
  * RPC Middleware Implementations
  *
  * Provides the actual implementations for RPC middleware tags.
- * These use FiberRefs to access request-scoped Cloudflare bindings.
+ * In Effect v4, middleware with `provides` is a function that wraps the
+ * RPC effect and provides the required service to it.
  *
  * @module
  */
-import { Effect, FiberRef, Layer } from "effect"
+import { Effect, Layer } from "effect"
 import {
+  RpcCloudflareMiddleware,
+  RpcDatabaseMiddleware,
+  CloudflareBindings,
   CloudflareBindingsError,
   DatabaseConnectionError,
-  makeDrizzle,
-
-} from "@repo/cloudflare"
-import { RpcCloudflareMiddleware, RpcDatabaseMiddleware } from "@repo/contracts"
+} from "@repo/contracts"
+import { PgDrizzle, makeDrizzle } from "@repo/db"
 import { currentEnv, currentCtx } from "@/services/cloudflare"
 
 // ============================================================================
@@ -23,15 +25,15 @@ import { currentEnv, currentCtx } from "@/services/cloudflare"
 /**
  * Live implementation of RpcCloudflareMiddleware.
  *
- * Reads env/ctx from FiberRef and provides them as the CloudflareBindings service.
+ * Reads env/ctx from ServiceMap.Reference and provides CloudflareBindings
+ * to the downstream RPC handler effect.
  */
 export const RpcCloudflareMiddlewareLive = Layer.succeed(
   RpcCloudflareMiddleware,
-  // Middleware function runs per-RPC-call
-  () =>
+  (effect) =>
     Effect.gen(function* () {
-      const env = yield* FiberRef.get(currentEnv)
-      const ctx = yield* FiberRef.get(currentCtx)
+      const env = yield* currentEnv
+      const ctx = yield* currentCtx
 
       if (env === null || ctx === null) {
         return yield* Effect.fail(
@@ -42,7 +44,9 @@ export const RpcCloudflareMiddlewareLive = Layer.succeed(
         )
       }
 
-      return { env, ctx }
+      return yield* effect.pipe(
+        Effect.provideService(CloudflareBindings, { env, ctx })
+      )
     })
 )
 
@@ -53,16 +57,14 @@ export const RpcCloudflareMiddlewareLive = Layer.succeed(
 /**
  * Live implementation of RpcDatabaseMiddleware.
  *
- * Creates a scoped database connection per-request.
- * The connection is automatically closed when the request scope ends.
+ * Creates a scoped database connection per-request and provides PgDrizzle
+ * to the downstream RPC handler effect.
  */
 export const RpcDatabaseMiddlewareLive = Layer.succeed(
   RpcDatabaseMiddleware,
-  // Middleware function runs per-RPC-call
-  () =>
+  (effect) =>
     Effect.gen(function* () {
-      // Get connection string from Cloudflare env via FiberRef
-      const env = yield* FiberRef.get(currentEnv)
+      const env = yield* currentEnv
       if (env === null) {
         return yield* Effect.fail(
           new DatabaseConnectionError({
@@ -72,14 +74,16 @@ export const RpcDatabaseMiddlewareLive = Layer.succeed(
         )
       }
 
+      const db = yield* makeDrizzle(env.HYPERDRIVE.connectionString)
 
-      return yield* makeDrizzle(env.HYPERDRIVE.connectionString)
+      return yield* effect.pipe(
+        Effect.provideService(PgDrizzle, db)
+      )
     }).pipe(
-      Effect.scoped,
-      Effect.catchAll((error) =>
+      Effect.catch(() =>
         Effect.fail(
           new DatabaseConnectionError({
-            message: `Database connection failed: ${String(error)}`
+            message: "Database connection failed"
           })
         )
       )

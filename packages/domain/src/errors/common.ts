@@ -5,7 +5,6 @@
  *
  * @module
  */
-import { HttpApiSchema } from "@effect/platform"
 import { Schema as S } from "effect"
 
 /**
@@ -13,13 +12,13 @@ import { Schema as S } from "effect"
  *
  * HTTP Status: 404 Not Found
  */
-export class NotFoundError extends S.TaggedError<NotFoundError>()(
+export class NotFoundError extends S.TaggedErrorClass<NotFoundError>()(
   "NotFoundError",
   {
     path: S.String,
     message: S.String
   },
-  HttpApiSchema.annotations({ status: 404 })
+  { httpApiStatus: 404 }
 ) {}
 
 /**
@@ -27,11 +26,33 @@ export class NotFoundError extends S.TaggedError<NotFoundError>()(
  *
  * HTTP Status: 400 Bad Request
  */
-export class ValidationError extends S.TaggedError<ValidationError>()(
+export class ValidationError extends S.TaggedErrorClass<ValidationError>()(
   "ValidationError",
   {
     message: S.String,
     errors: S.Array(S.String)
   },
-  HttpApiSchema.annotations({ status: 400 })
+  { httpApiStatus: 400 }
+) {}
+
+/**
+ * Error when Cloudflare bindings are not available.
+ *
+ * HTTP Status: 500 Internal Server Error
+ */
+export class CloudflareBindingsError extends S.TaggedErrorClass<CloudflareBindingsError>()(
+  "CloudflareBindingsError",
+  { message: S.String },
+  { httpApiStatus: 500 }
+) {}
+
+/**
+ * Error when database connection fails.
+ *
+ * HTTP Status: 503 Service Unavailable
+ */
+export class DatabaseConnectionError extends S.TaggedErrorClass<DatabaseConnectionError>()(
+  "DatabaseConnectionError",
+  { message: S.String },
+  { httpApiStatus: 503 }
 ) {}

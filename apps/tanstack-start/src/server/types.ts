@@ -5,7 +5,7 @@
  */
 import type { Effect } from "effect"
 // Uncomment when adding PgDrizzle service:
-// import type { PgDrizzle } from "@repo/cloudflare"
+// import type { PgDrizzle } from "@repo/db"
 import { env } from "cloudflare:workers"
 
 /**
@@ -19,7 +19,7 @@ export type CloudflareEnv = typeof env
  * Add your service types here as you create them:
  * @example
  * ```typescript
- * import type { PgDrizzle } from "@repo/cloudflare"
+ * import type { PgDrizzle } from "@repo/db"
  * import type { MyCustomService } from "./services/my-service"
  *
  * export type EffectServices = PgDrizzle | MyCustomService

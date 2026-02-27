@@ -23,7 +23,6 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@effect/platform": "latest",
-    "effect": "latest"
+    "effect": "catalog:"
   }
 }

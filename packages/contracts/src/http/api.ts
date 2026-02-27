@@ -5,7 +5,7 @@
  *
  * @module
  */
-import { HttpApi } from "@effect/platform"
+import { HttpApi } from "effect/unstable/httpapi"
 import { HealthGroup, UsersGroup } from "./groups"
 import { CloudflareBindingsMiddleware } from "./middleware"
 

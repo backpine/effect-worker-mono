@@ -13,7 +13,7 @@ import { Schema as S } from "effect"
  * Format: usr_[alphanumeric]
  */
 export const UserIdSchema = S.String.pipe(
-  S.pattern(/^usr_[a-zA-Z0-9]+$/),
+  S.check(S.isPattern(/^usr_[a-zA-Z0-9]+$/)),
   S.brand("UserId")
 )
 export type UserId = typeof UserIdSchema.Type
@@ -22,7 +22,7 @@ export type UserId = typeof UserIdSchema.Type
  * Email with basic format validation.
  */
 export const EmailSchema = S.String.pipe(
-  S.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/),
+  S.check(S.isPattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)),
   S.brand("Email")
 )
 export type Email = typeof EmailSchema.Type
@@ -43,11 +43,11 @@ export type User = typeof UserSchema.Type
  */
 export const CreateUserSchema = S.Struct({
   email: S.String.pipe(
-    S.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, {
-      message: () => "Invalid email format"
-    })
+    S.check(S.isPattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, {
+      message: "Invalid email format"
+    }))
   ),
-  name: S.String.pipe(S.minLength(1, { message: () => "Name is required" }))
+  name: S.String.pipe(S.check(S.isMinLength(1, { message: "Name is required" })))
 })
 export type CreateUser = typeof CreateUserSchema.Type
 

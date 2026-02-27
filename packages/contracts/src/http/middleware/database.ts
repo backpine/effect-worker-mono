@@ -6,8 +6,9 @@
  *
  * @module
  */
-import { HttpApiMiddleware } from "@effect/platform"
-import { PgDrizzle, DatabaseConnectionError } from "@repo/cloudflare"
+import { HttpApiMiddleware } from "effect/unstable/httpapi"
+import { PgDrizzle } from "@repo/db/pg-drizzle/tag"
+import { DatabaseConnectionError } from "@repo/domain"
 
 /**
  * Middleware that provides PgDrizzle to HTTP handlers.
@@ -30,13 +31,12 @@ import { PgDrizzle, DatabaseConnectionError } from "@repo/cloudflare"
  * const users = yield* drizzle.select().from(usersTable)
  * ```
  */
-export class DatabaseMiddleware extends HttpApiMiddleware.Tag<DatabaseMiddleware>()(
-  "@repo/api/DatabaseMiddleware",
-  {
-    failure: DatabaseConnectionError,
-    provides: PgDrizzle
-  }
-) {}
+export class DatabaseMiddleware extends HttpApiMiddleware.Service<
+  DatabaseMiddleware,
+  { provides: PgDrizzle }
+>()("@repo/api/DatabaseMiddleware", {
+  error: DatabaseConnectionError
+}) {}
 
 // Re-export for convenience
 export { DatabaseConnectionError }

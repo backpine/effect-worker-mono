@@ -14,16 +14,10 @@
   },
   "dependencies": {
     "@repo/contracts": "workspace:^",
-    "@repo/cloudflare": "workspace:^",
     "@repo/db": "workspace:^",
     "@repo/domain": "workspace:^",
-    "@effect/experimental": "latest",
-    "@effect/platform": "latest",
-    "@effect/sql": "latest",
-    "@effect/sql-drizzle": "latest",
-    "@effect/sql-pg": "latest",
     "drizzle-orm": "^0.45.0",
-    "effect": "latest"
+    "effect": "catalog:"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241127.0",

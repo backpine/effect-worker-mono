@@ -6,11 +6,9 @@
  *
  * @module
  */
-import { HttpApiMiddleware } from "@effect/platform"
-import {
-  CloudflareBindings,
-  CloudflareBindingsError
-} from "@repo/cloudflare"
+import { HttpApiMiddleware } from "effect/unstable/httpapi"
+import { CloudflareBindingsError } from "@repo/domain"
+import { CloudflareBindings } from "../../services"
 
 /**
  * Middleware that provides CloudflareBindings to HTTP handlers.
@@ -26,13 +24,12 @@ import {
  *
  * The implementation must be provided by the app via Layer.
  */
-export class CloudflareBindingsMiddleware extends HttpApiMiddleware.Tag<CloudflareBindingsMiddleware>()(
-  "@repo/api/CloudflareBindingsMiddleware",
-  {
-    failure: CloudflareBindingsError,
-    provides: CloudflareBindings
-  }
-) {}
+export class CloudflareBindingsMiddleware extends HttpApiMiddleware.Service<
+  CloudflareBindingsMiddleware,
+  { provides: CloudflareBindings }
+>()("@repo/api/CloudflareBindingsMiddleware", {
+  error: CloudflareBindingsError
+}) {}
 
 // Re-export for convenience
-export { CloudflareBindings, CloudflareBindingsError }
+export { CloudflareBindingsError }
