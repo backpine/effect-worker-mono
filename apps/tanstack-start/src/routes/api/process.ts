@@ -178,7 +178,7 @@ export const Route = createFileRoute("/api/process")({
               Effect.succeed(errorResponse(error.message, 422))
             ),
             // Handle unexpected errors (500)
-            Effect.catchAllDefect((defect) =>
+            Effect.catchDefect((defect) =>
               Effect.succeed(
                 errorResponse(
                   defect instanceof Error ? defect.message : "Internal server error",

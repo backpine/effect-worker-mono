@@ -6,7 +6,7 @@
  *
  * @module
  */
-import { HttpApiEndpoint, HttpApiGroup } from "@effect/platform"
+import { HttpApiEndpoint, HttpApiGroup } from "effect/unstable/httpapi"
 import { Schema as S } from "effect"
 import {
   UserSchema,
@@ -31,18 +31,20 @@ export type UsersList = typeof UsersListSchema.Type
  * DatabaseMiddleware provides request-scoped database connections.
  */
 export const UsersGroup = HttpApiGroup.make("users")
-  .add(HttpApiEndpoint.get("list", "/").addSuccess(UsersListSchema))
+  .add(HttpApiEndpoint.get("list", "/", { success: UsersListSchema }))
   .add(
-    HttpApiEndpoint.get("get", "/:id")
-      .setPath(UserIdPathSchema)
-      .addSuccess(UserSchema)
-      .addError(UserNotFoundError)
+    HttpApiEndpoint.get("get", "/:id", {
+      params: { id: UserIdPathSchema.fields.id },
+      success: UserSchema,
+      error: UserNotFoundError
+    })
   )
   .add(
-    HttpApiEndpoint.post("create", "/")
-      .setPayload(CreateUserSchema)
-      .addSuccess(UserSchema)
-      .addError(UserCreationError)
+    HttpApiEndpoint.post("create", "/", {
+      payload: CreateUserSchema,
+      success: UserSchema,
+      error: UserCreationError
+    })
   )
   .middleware(DatabaseMiddleware)
   .prefix("/users")

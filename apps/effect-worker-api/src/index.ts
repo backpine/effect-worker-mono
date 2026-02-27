@@ -5,25 +5,21 @@
  *
  * @module
  */
-import { runtime, handleRequest, openApiSpec } from "@/runtime"
-import { withCloudflareBindings } from "@/services"
+import { pipe, ServiceMap } from "effect"
+import { handler } from "@/runtime"
+import { currentEnv, currentCtx } from "@/services/cloudflare"
 
 /**
  * Cloudflare Worker fetch handler.
  */
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
-    const url = new URL(request.url)
+    // Pass per-request Cloudflare bindings via ServiceMap context
+    const services = pipe(
+      ServiceMap.make(currentEnv, env),
+      ServiceMap.add(currentCtx, ctx)
+    )
 
-    // Serve OpenAPI spec at /api/openapi.json
-    if (url.pathname === "/api/openapi.json") {
-      return Response.json(openApiSpec)
-    }
-
-    // HTTP REST API
-    // Handle request with Cloudflare bindings available via FiberRef
-    const effect = handleRequest(request).pipe(withCloudflareBindings(env, ctx))
-
-    return runtime.runPromise(effect)
+    return handler(request, services)
   }
 } satisfies ExportedHandler<Env>

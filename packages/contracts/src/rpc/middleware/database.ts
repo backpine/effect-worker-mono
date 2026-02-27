@@ -2,12 +2,13 @@
  * Database RPC Middleware Tag
  *
  * RpcMiddleware tag that provides PgDrizzle to RPC handlers.
- * The implementation is provided by the app using FiberRefs.
+ * The implementation is provided by the app using ServiceMap.Reference.
  *
  * @module
  */
-import { RpcMiddleware } from "@effect/rpc"
-import { PgDrizzle, DatabaseConnectionError } from "@repo/cloudflare"
+import { RpcMiddleware } from "effect/unstable/rpc"
+import { PgDrizzle } from "@repo/db/pg-drizzle/tag"
+import { DatabaseConnectionError } from "@repo/domain"
 
 /**
  * Middleware that provides PgDrizzle to RPC handlers.
@@ -28,10 +29,10 @@ import { PgDrizzle, DatabaseConnectionError } from "@repo/cloudflare"
  * const users = yield* drizzle.select().from(usersTable)
  * ```
  */
-export class RpcDatabaseMiddleware extends RpcMiddleware.Tag<RpcDatabaseMiddleware>()(
-  "@repo/rpc/RpcDatabaseMiddleware",
-  {
-    failure: DatabaseConnectionError,
-    provides: PgDrizzle
-  }
-) {}
+export class RpcDatabaseMiddleware extends RpcMiddleware.Service<
+  RpcDatabaseMiddleware,
+  { provides: PgDrizzle }
+>()("@repo/rpc/RpcDatabaseMiddleware", {
+  error: DatabaseConnectionError,
+  requiredForClient: false
+}) {}

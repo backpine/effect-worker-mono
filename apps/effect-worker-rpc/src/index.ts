@@ -5,8 +5,9 @@
  *
  * @module
  */
-import { rpcRuntime, handleRpcRequest } from "@/runtime"
-import { withCloudflareBindings } from "@/services"
+import { pipe, ServiceMap } from "effect"
+import { rpcHandler } from "@/runtime"
+import { currentEnv, currentCtx } from "@/services/cloudflare"
 
 /**
  * Cloudflare Worker fetch handler.
@@ -20,13 +21,12 @@ export default {
       return Response.json({ status: "ok", service: "effect-worker-rpc" })
     }
 
-    // RPC endpoint
-    if (url.pathname === "/rpc") {
-      const effect = handleRpcRequest(request).pipe(withCloudflareBindings(env, ctx))
-      return rpcRuntime.runPromise(effect)
-    }
+    // Pass per-request Cloudflare bindings via ServiceMap context
+    const services = pipe(
+      ServiceMap.make(currentEnv, env),
+      ServiceMap.add(currentCtx, ctx)
+    )
 
-    // Not found
-    return new Response("Not Found", { status: 404 })
+    return rpcHandler(request, services)
   }
 } satisfies ExportedHandler<Env>

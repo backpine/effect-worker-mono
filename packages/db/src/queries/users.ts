@@ -6,7 +6,7 @@
  * @module
  */
 import { DateTime, Effect } from "effect"
-import { PgDrizzle } from "@effect/sql-drizzle/Pg"
+import { PgDrizzle } from "../pg-drizzle/index.js"
 import { eq } from "drizzle-orm"
 
 import { users } from "../schema"
@@ -31,7 +31,7 @@ const toDomainUser = (row: typeof users.$inferSelect): User => ({
   id: toUserId(row.id),
   email: row.email as Email,
   name: row.name,
-  createdAt: DateTime.unsafeFromDate(row.createdAt)
+  createdAt: DateTime.fromDateUnsafe(row.createdAt)
 })
 
 // ============================================================================

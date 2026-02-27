@@ -5,7 +5,6 @@
  *
  * @module
  */
-import { HttpApiSchema } from "@effect/platform"
 import { Schema as S } from "effect"
 import { UserIdSchema } from "../schemas/user"
 
@@ -14,13 +13,13 @@ import { UserIdSchema } from "../schemas/user"
  *
  * HTTP Status: 400 Bad Request
  */
-export class UserCreationError extends S.TaggedError<UserCreationError>()(
+export class UserCreationError extends S.TaggedErrorClass<UserCreationError>()(
   "UserCreationError",
   {
     email: S.String,
     name: S.String
   },
-  HttpApiSchema.annotations({ status: 400 })
+  { httpApiStatus: 400 }
 ) {}
 
 /**
@@ -28,11 +27,11 @@ export class UserCreationError extends S.TaggedError<UserCreationError>()(
  *
  * HTTP Status: 404 Not Found
  */
-export class UserNotFoundError extends S.TaggedError<UserNotFoundError>()(
+export class UserNotFoundError extends S.TaggedErrorClass<UserNotFoundError>()(
   "UserNotFoundError",
   {
     id: UserIdSchema,
     message: S.String
   },
-  HttpApiSchema.annotations({ status: 404 })
+  { httpApiStatus: 404 }
 ) {}

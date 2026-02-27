@@ -7,7 +7,6 @@
  * @module
  */
 export {
-  CloudflareBindings,
   CloudflareBindingsError,
   CloudflareBindingsMiddleware
 } from "./cloudflare"

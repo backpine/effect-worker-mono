@@ -31,10 +31,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@effect/platform": "latest",
-    "@effect/rpc": "latest",
-    "@repo/cloudflare": "workspace:^",
+    "@repo/db": "workspace:^",
     "@repo/domain": "workspace:^",
-    "effect": "latest"
+    "effect": "catalog:"
   }
 }

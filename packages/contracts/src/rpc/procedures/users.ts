@@ -6,7 +6,7 @@
  *
  * @module
  */
-import { Rpc, RpcGroup } from "@effect/rpc"
+import { Rpc, RpcGroup } from "effect/unstable/rpc"
 import { Schema as S } from "effect"
 import { RpcDatabaseMiddleware } from "../middleware"
 
@@ -90,7 +90,7 @@ export const createUser = Rpc.make("createUser", {
     name: S.String
   }),
   success: UserRpcSchema,
-  error: S.Union(DuplicateEmailErrorSchema, ValidationErrorSchema)
+  error: S.Union([DuplicateEmailErrorSchema, ValidationErrorSchema])
 }).middleware(RpcDatabaseMiddleware)
 
 // ============================================================================

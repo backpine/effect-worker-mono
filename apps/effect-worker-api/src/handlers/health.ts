@@ -3,7 +3,7 @@
  *
  * @module
  */
-import { HttpApiBuilder } from "@effect/platform"
+import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { DateTime, Effect } from "effect"
 import { WorkerApi } from "@repo/contracts"
 
@@ -14,14 +14,12 @@ export const HealthGroupLive = HttpApiBuilder.group(
   WorkerApi,
   "health",
   (handlers) =>
-    Effect.gen(function* () {
-      return handlers.handle("check", () =>
-        Effect.gen(function* () {
-          return {
-            status: "ok" as const,
-            timestamp: DateTime.unsafeNow()
-          }
-        })
-      )
-    })
+    handlers.handle("check", () =>
+      Effect.gen(function* () {
+        return {
+          status: "ok" as const,
+          timestamp: DateTime.nowUnsafe()
+        }
+      })
+    )
 )

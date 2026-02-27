@@ -11,17 +11,14 @@
  *
  * @example Adding PgDrizzle (requires HYPERDRIVE binding in wrangler.jsonc):
  * ```typescript
- * import { PgDrizzle, makeDrizzle } from "@repo/cloudflare"
+ * import { PgDrizzle, makePgDrizzleLayer } from "@repo/db"
  *
- * const dbLayer = Layer.scoped(
- *   PgDrizzle,
- *   makeDrizzle(env.HYPERDRIVE.connectionString)
- * )
+ * const dbLayer = makePgDrizzleLayer(env.HYPERDRIVE.connectionString)
  * const servicesLayer = Layer.mergeAll(dbLayer, otherServiceLayer)
  * ```
  */
 import { createMiddleware } from "@tanstack/react-start"
-import { Effect, Layer, Runtime } from "effect"
+import { Effect, Layer, ManagedRuntime } from "effect"
 import { env } from "cloudflare:workers"
 import type { EffectServices } from "../types"
 
@@ -51,42 +48,29 @@ export const effectRuntimeMiddleware = createMiddleware().server(
     // Add your service layers here and merge them:
     //
     // Example with PgDrizzle (uncomment when HYPERDRIVE is configured):
-    // const dbLayer = Layer.scoped(
-    //   PgDrizzle,
-    //   makeDrizzle(env.HYPERDRIVE.connectionString)
-    // )
+    // const dbLayer = makePgDrizzleLayer(env.HYPERDRIVE.connectionString)
     // const servicesLayer = Layer.mergeAll(dbLayer, otherServiceLayer)
 
     // Empty layer - add your services above
     const servicesLayer = Layer.empty
 
-    return Effect.runPromise(
-      Effect.scoped(
-        Effect.gen(function* () {
-          const runtime = yield* Layer.toRuntime(servicesLayer)
+    const runtime = ManagedRuntime.make(servicesLayer)
 
-          const runEffect = <A, E>(
-            effect: Effect.Effect<A, E, EffectServices>
-          ) => {
-            return Runtime.runPromise(runtime)(effect)
-          }
+    try {
+      const runEffect = <A, E>(
+        effect: Effect.Effect<A, E, EffectServices>
+      ) => {
+        return runtime.runPromise(effect)
+      }
 
-          const nextResult = next({
-            context: {
-              env,
-              runEffect,
-            },
-          })
-
-          return yield* Effect.tryPromise({
-            try: async () => await nextResult,
-            catch: (error) => {
-              console.error("Error occurred in middleware:", error)
-              throw error
-            },
-          })
-        })
-      )
-    )
+      return await next({
+        context: {
+          env,
+          runEffect,
+        },
+      })
+    } finally {
+      await runtime.dispose()
+    }
   }
 )

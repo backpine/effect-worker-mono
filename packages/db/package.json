@@ -28,8 +28,8 @@
   },
   "dependencies": {
     "drizzle-orm": "^0.45.0",
-    "effect": "latest",
-    "@effect/sql-drizzle": "latest",
+    "effect": "catalog:",
+    "@effect/sql-pg": "catalog:",
     "@repo/domain": "workspace:*"
   },
   "devDependencies": {

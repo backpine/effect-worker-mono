@@ -1,34 +1,13 @@
 /**
  * RPC Runtime Configuration
  *
- * This module sets up the RPC server for handling RPC requests.
- *
- * ## Request Flow
- *
- * ```
- * fetch(request, env, ctx)
- *   └─> withCloudflareBindings(env, ctx)
- *         └─> handleRpcRequest(request)
- *               └─> Middleware chain:
- *                     ├─> RpcCloudflareMiddleware → provides env/ctx
- *                     └─> RpcDatabaseMiddleware → provides drizzle
- *                           └─> Handler accesses services via:
- *                                 - yield* CloudflareBindings
- *                                 - yield* DatabaseService
- * ```
- *
- * ## Why toHttpApp instead of toWebHandler?
- *
- * `toWebHandler` creates its own runtime internally, so FiberRefs set via
- * `withCloudflareBindings` wouldn't be accessible. By using `toHttpApp`,
- * we get an Effect that can be wrapped with `withCloudflareBindings` and
- * run in our existing ManagedRuntime, preserving FiberRef access.
+ * Sets up the RPC server using HttpRouter.toWebHandler.
  *
  * @module
  */
-import { Effect, Layer, ManagedRuntime } from "effect"
-import { HttpServer, HttpServerRequest, HttpServerResponse } from "@effect/platform"
-import { RpcServer, RpcSerialization } from "@effect/rpc"
+import { Layer } from "effect"
+import { HttpRouter, HttpServer } from "effect/unstable/http"
+import { RpcServer, RpcSerialization } from "effect/unstable/rpc"
 import { UsersRpc } from "@repo/contracts"
 import { UsersRpcHandlersLive } from "@/handlers"
 import {
@@ -42,9 +21,6 @@ import {
 
 /**
  * Combined middleware layer.
- *
- * Middleware implementations are provided at the runtime level.
- * These are needed by both handlers and RpcServer.toHttpApp.
  */
 const RpcMiddlewareLive = Layer.mergeAll(
   RpcCloudflareMiddlewareLive,
@@ -52,60 +28,34 @@ const RpcMiddlewareLive = Layer.mergeAll(
 )
 
 /**
- * Full RPC layer including handlers, middleware, serialization, and HTTP services.
+ * Protocol layer — HTTP transport with ndjson serialization.
  *
- * Note: RpcMiddlewareLive is merged (not just provided) because toHttpApp
- * requires the middleware services in its context, not just as dependencies.
+ * layerProtocolHttp requires RpcSerialization + HttpRouter.
+ * We provide RpcSerialization here; HttpRouter is provided by toWebHandler.
  */
-const RpcLayer = Layer.mergeAll(
-  UsersRpcHandlersLive,
-  RpcMiddlewareLive,
-  RpcSerialization.layerNdjson,
-  HttpServer.layerContext
+const ProtocolLayer = RpcServer.layerProtocolHttp({ path: "/rpc" }).pipe(
+  Layer.provide(RpcSerialization.layerNdjson)
 )
 
 /**
- * Shared runtime for RPC requests.
+ * Full RPC routes layer.
  *
- * Similar to HTTP runtime, layers are memoized at startup.
- * Request-scoped services are provided via middleware.
+ * RpcServer.layer requires Protocol + handlers + middleware.
+ * After composition, only HttpRouter remains as a requirement
+ * (provided by HttpRouter.toWebHandler).
  */
-export const rpcRuntime = ManagedRuntime.make(RpcLayer)
-
-// ============================================================================
-// Request Handler
-// ============================================================================
+const RpcRoutes = RpcServer.layer(UsersRpc).pipe(
+  Layer.provide(UsersRpcHandlersLive),
+  Layer.provide(RpcMiddlewareLive),
+  Layer.provide(ProtocolLayer)
+)
 
 /**
- * Handle an incoming RPC request.
+ * Web handler for RPC requests.
  *
- * Returns an Effect that should be wrapped with `withCloudflareBindings`
- * before execution to make env/ctx available to middleware.
- *
- * ## Usage
- *
- * ```typescript
- * const effect = handleRpcRequest(request).pipe(
- *   withCloudflareBindings(env, ctx),
- * )
- * return rpcRuntime.runPromise(effect)
- * ```
+ * Layers are memoized internally — built once at startup.
+ * Per-request services (env/ctx) are passed via the ServiceMap context.
  */
-export const handleRpcRequest = (request: Request) =>
-  Effect.gen(function* () {
-    // Get the RPC HTTP app (yields an httpApp function)
-    const httpApp = yield* RpcServer.toHttpApp(UsersRpc, {
-      spanPrefix: "RpcServer"
-    })
-
-    // Convert web request to Effect platform request
-    const serverRequest = HttpServerRequest.fromWeb(request)
-
-    // Handle and return web response
-    // httpApp is an Effect<Response, E, HttpServerRequest | Scope>
-    const response = yield* httpApp.pipe(
-      Effect.provideService(HttpServerRequest.HttpServerRequest, serverRequest)
-    )
-
-    return HttpServerResponse.toWeb(response)
-  }).pipe(Effect.scoped)
+export const { handler: rpcHandler, dispose } = HttpRouter.toWebHandler(
+  RpcRoutes.pipe(Layer.provide(HttpServer.layerServices))
+)

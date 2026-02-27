@@ -21,8 +21,6 @@
     "target": "ES2022",
     "module": "ESNext",
     "paths": {
-      "@repo/cloudflare": ["./packages/cloudflare/src/index.ts"],
-      "@repo/cloudflare/*": ["./packages/cloudflare/src/*"],
       "@repo/contracts": ["./packages/contracts/src/index.ts"],
       "@repo/contracts/*": ["./packages/contracts/src/*"],
       "@repo/db": ["./packages/db/src/index.ts"],

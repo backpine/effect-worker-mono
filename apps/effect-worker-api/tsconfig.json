@@ -23,8 +23,6 @@
       "@/*": ["./src/*"],
       "@repo/contracts": ["../../packages/contracts/src/index.ts"],
       "@repo/contracts/*": ["../../packages/contracts/src/*"],
-      "@repo/cloudflare": ["../../packages/cloudflare/src/index.ts"],
-      "@repo/cloudflare/*": ["../../packages/cloudflare/src/*"],
       "@repo/db": ["../../packages/db/src/index.ts"],
       "@repo/db/*": ["../../packages/db/src/*"],
       "@repo/domain": ["../../packages/domain/src/index.ts"],

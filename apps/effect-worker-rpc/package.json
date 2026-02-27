@@ -13,18 +13,11 @@
     "build": "tsc && wrangler deploy --dry-run"
   },
   "dependencies": {
-    "@repo/cloudflare": "workspace:^",
     "@repo/db": "workspace:^",
     "@repo/domain": "workspace:^",
     "@repo/contracts": "workspace:^",
-    "@effect/experimental": "latest",
-    "@effect/platform": "latest",
-    "@effect/rpc": "latest",
-    "@effect/sql": "latest",
-    "@effect/sql-drizzle": "latest",
-    "@effect/sql-pg": "latest",
     "drizzle-orm": "^0.45.0",
-    "effect": "latest"
+    "effect": "catalog:"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241127.0",

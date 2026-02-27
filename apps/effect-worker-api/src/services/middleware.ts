@@ -1,32 +1,36 @@
 /**
  * Middleware Implementations
  *
- * App-specific implementations of middleware defined in @repo/api.
+ * App-specific implementations of middleware defined in @repo/contracts.
+ *
+ * In Effect v4, middleware with `provides` is a function that wraps the
+ * httpEffect and provides the required service to it.
  *
  * @module
  */
-import { Effect, FiberRef, Layer } from "effect";
+import { Effect, Layer } from "effect";
 import {
   CloudflareBindingsMiddleware,
   CloudflareBindingsError,
+  CloudflareBindings,
   DatabaseMiddleware,
   DatabaseConnectionError,
 } from "@repo/contracts";
+import { PgDrizzle, makeDrizzle } from "@repo/db";
 import { currentEnv, currentCtx } from "@/services/cloudflare";
-import { makeDrizzle } from "@repo/cloudflare";
 
 /**
  * Live implementation of CloudflareBindingsMiddleware.
  *
- * Reads env/ctx from FiberRef and provides them as the CloudflareBindings service.
+ * Reads env/ctx from ServiceMap.Reference and provides CloudflareBindings
+ * to the downstream handler effect.
  */
-export const CloudflareBindingsMiddlewareLive = Layer.effect(
+export const CloudflareBindingsMiddlewareLive = Layer.succeed(
   CloudflareBindingsMiddleware,
-  Effect.gen(function* () {
-    // Return the middleware effect (runs per-request)
-    return Effect.gen(function* () {
-      const env = yield* FiberRef.get(currentEnv);
-      const ctx = yield* FiberRef.get(currentCtx);
+  (httpEffect) =>
+    Effect.gen(function* () {
+      const env = yield* currentEnv;
+      const ctx = yield* currentCtx;
 
       if (env === null || ctx === null) {
         return yield* Effect.fail(
@@ -37,24 +41,23 @@ export const CloudflareBindingsMiddlewareLive = Layer.effect(
         );
       }
 
-      return { env, ctx };
-    });
-  }),
+      return yield* httpEffect.pipe(
+        Effect.provideService(CloudflareBindings, { env, ctx }),
+      );
+    }),
 );
 
 /**
  * Live implementation of DatabaseMiddleware.
  *
- * Creates a scoped PgDrizzle instance per-request.
- * The connection is automatically closed when the request scope ends.
+ * Creates a scoped PgDrizzle instance per-request and provides it
+ * to the downstream handler effect.
  */
-export const DatabaseMiddlewareLive = Layer.effect(
+export const DatabaseMiddlewareLive = Layer.succeed(
   DatabaseMiddleware,
-  Effect.gen(function* () {
-    // Return the middleware effect (runs per-request)
-    return Effect.gen(function* () {
-      // Get connection string from Cloudflare env via FiberRef
-      const env = yield* FiberRef.get(currentEnv);
+  (httpEffect) =>
+    Effect.gen(function* () {
+      const env = yield* currentEnv;
       if (env === null) {
         return yield* Effect.fail(
           new DatabaseConnectionError({
@@ -64,17 +67,20 @@ export const DatabaseMiddlewareLive = Layer.effect(
         );
       }
 
-      return yield* makeDrizzle(env.HYPERDRIVE.connectionString);
+      const db = yield* makeDrizzle(env.HYPERDRIVE.connectionString);
+
+      return yield* httpEffect.pipe(
+        Effect.provideService(PgDrizzle, db),
+      );
     }).pipe(
-      Effect.catchAll((error) =>
+      Effect.catch(() =>
         Effect.fail(
           new DatabaseConnectionError({
-            message: `Database connection failed: ${String(error)}`,
+            message: "Database connection failed",
           }),
         ),
       ),
-    );
-  }),
+    ),
 );
 
 /**
