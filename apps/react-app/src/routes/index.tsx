@@ -1,7 +1,9 @@
-import { useState } from "react"
+import { Suspense, useState } from "react"
 import { createFileRoute } from "@tanstack/react-router"
+import { useAtomValue, useAtomSet } from "@effect/atom-react"
+import { Cause } from "effect"
 import { Button } from "@/components/ui/button"
-import { useUsers, useCreateUser } from "@/rpc"
+import { usersAtom, createUserFn } from "@/atoms"
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -13,11 +15,13 @@ function HomePage() {
       <div>
         <h1 className="text-3xl font-bold">Users</h1>
         <p className="text-muted-foreground">
-          Manage users via Effect RPC
+          Manage users via Effect RPC + Atom
         </p>
       </div>
       <CreateUserForm />
-      <UsersList />
+      <Suspense fallback={<p className="text-muted-foreground">Loading users...</p>}>
+        <UsersList />
+      </Suspense>
     </div>
   )
 }
@@ -25,20 +29,19 @@ function HomePage() {
 function CreateUserForm() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
-  const createUser = useCreateUser()
+  const result = useAtomValue(createUserFn)
+  const submit = useAtomSet(createUserFn, { mode: "promise" })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim() || !email.trim()) return
-    createUser.mutate(
-      { name: name.trim(), email: email.trim() },
-      {
-        onSuccess: () => {
-          setName("")
-          setEmail("")
-        },
-      }
-    )
+    try {
+      await submit({ name: name.trim(), email: email.trim() })
+      setName("")
+      setEmail("")
+    } catch {
+      // Error state is tracked in the atom
+    }
   }
 
   return (
@@ -62,36 +65,36 @@ function CreateUserForm() {
           required
         />
       </div>
-      {createUser.error && (
+      {result._tag === "Failure" && (
         <p className="text-sm text-destructive">
-          {createUser.error instanceof Error
-            ? createUser.error.message
-            : "Failed to create user"}
+          {Cause.pretty(result.cause)}
         </p>
       )}
-      <Button type="submit" disabled={createUser.isPending}>
-        {createUser.isPending ? "Creating..." : "Create User"}
+      <Button type="submit" disabled={result.waiting}>
+        {result.waiting ? "Creating..." : "Create User"}
       </Button>
     </form>
   )
 }
 
 function UsersList() {
-  const { data, isLoading, error } = useUsers()
+  const result = useAtomValue(usersAtom)
 
-  if (isLoading) {
+  if (result._tag === "Initial") {
     return <p className="text-muted-foreground">Loading users...</p>
   }
 
-  if (error) {
+  if (result._tag === "Failure") {
     return (
       <p className="text-destructive">
-        {error instanceof Error ? error.message : "Failed to load users"}
+        {Cause.pretty(result.cause)}
       </p>
     )
   }
 
-  if (!data || data.users.length === 0) {
+  const { users, total } = result.value
+
+  if (users.length === 0) {
     return (
       <p className="text-muted-foreground">No users yet. Create one above.</p>
     )
@@ -100,10 +103,10 @@ function UsersList() {
   return (
     <div className="space-y-2">
       <h2 className="text-lg font-semibold">
-        All Users <span className="text-muted-foreground font-normal">({data.total})</span>
+        All Users <span className="text-muted-foreground font-normal">({total})</span>
       </h2>
       <div className="divide-y divide-border rounded-lg border border-border">
-        {data.users.map((user) => (
+        {users.map((user) => (
           <div key={user.id} className="flex items-center justify-between px-4 py-3">
             <div>
               <p className="font-medium">{user.name}</p>

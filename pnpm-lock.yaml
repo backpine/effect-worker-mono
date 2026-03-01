@@ -6,6 +6,9 @@ settings:
 
 catalogs:
   default:
+    '@effect/atom-react':
+      specifier: 4.0.0-beta.20
+      version: 4.0.0-beta.20
     '@effect/sql-pg':
       specifier: 4.0.0-beta.20
       version: 4.0.0-beta.20
@@ -109,18 +112,15 @@ importers:
 
   apps/react-app:
     dependencies:
+      '@effect/atom-react':
+        specifier: 'catalog:'
+        version: 4.0.0-beta.20(effect@4.0.0-beta.20)(react@19.2.3)(scheduler@0.27.0)
       '@repo/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
       '@tailwindcss/vite':
         specifier: ^4.1.18
         version: 4.1.18(vite@7.1.2(@types/node@22.19.7)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2))
-      '@tanstack/react-query':
-        specifier: ^5.90.18
-        version: 5.90.18(react@19.2.3)
-      '@tanstack/react-query-devtools':
-        specifier: ^5.91.2
-        version: 5.91.2(@tanstack/react-query@5.90.18(react@19.2.3))(react@19.2.3)
       '@tanstack/react-router':
         specifier: ^1.150.0
         version: 1.150.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -148,6 +148,9 @@ importers:
       react-dom:
         specifier: ^19.2.3
         version: 19.2.3(react@19.2.3)
+      scheduler:
+        specifier: ^0.27.0
+        version: 0.27.0
       tailwind-merge:
         specifier: ^3.4.0
         version: 3.4.0
@@ -572,6 +575,13 @@ packages:
 
   '@drizzle-team/brocli@0.10.2':
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
+
+  '@effect/atom-react@4.0.0-beta.20':
+    resolution: {integrity: sha512-CZfGbZXUKC/TgDKWVhn9E/L/TVxXGhHvczd+8kQlpLLjry1COtKzScwXulE4ODYZeHl3hjDUlSmlIfld7yO/VA==}
+    peerDependencies:
+      effect: ^4.0.0-beta.20
+      react: ^19.2.4
+      scheduler: '*'
 
   '@effect/sql-pg@4.0.0-beta.20':
     resolution: {integrity: sha512-likUKYpu92Dbf2RbqHw3zH/egoYiP2cDsNbGHe+p45lZHp9iySM/XNBRiw6O6eJ0zt9KM/qC19DYqIpUPNifkA==}
@@ -4512,6 +4522,12 @@ snapshots:
   '@csstools/css-tokenizer@3.0.4': {}
 
   '@drizzle-team/brocli@0.10.2': {}
+
+  '@effect/atom-react@4.0.0-beta.20(effect@4.0.0-beta.20)(react@19.2.3)(scheduler@0.27.0)':
+    dependencies:
+      effect: 4.0.0-beta.20
+      react: 19.2.3
+      scheduler: 0.27.0
 
   '@effect/sql-pg@4.0.0-beta.20(effect@4.0.0-beta.20)':
     dependencies:
