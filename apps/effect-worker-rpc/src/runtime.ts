@@ -54,7 +54,7 @@ const RpcRoutes = RpcServer.layer(UsersRpc).pipe(
  * Web handler for RPC requests.
  *
  * Layers are memoized internally — built once at startup.
- * Per-request services (env/ctx) are passed via the ServiceMap context.
+ * Per-request services (env/ctx) are passed via the Context context.
  */
 export const { handler: rpcHandler, dispose } = HttpRouter.toWebHandler(
   RpcRoutes.pipe(Layer.provide(HttpServer.layerServices))

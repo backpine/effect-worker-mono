@@ -29,7 +29,7 @@ const ApiRoutes = HttpApiBuilder.layer(WorkerApi, {
  * Web handler created from the API routes.
  *
  * Layers are memoized internally — built once at startup.
- * Per-request services (env/ctx) are passed via the ServiceMap context
+ * Per-request services (env/ctx) are passed via the Context context
  * parameter of the handler function.
  */
 export const { handler, dispose } = HttpRouter.toWebHandler(

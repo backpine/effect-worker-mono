@@ -22,7 +22,7 @@ import { currentEnv, currentCtx } from "@/services/cloudflare";
 /**
  * Live implementation of CloudflareBindingsMiddleware.
  *
- * Reads env/ctx from ServiceMap.Reference and provides CloudflareBindings
+ * Reads env/ctx from Context.Reference and provides CloudflareBindings
  * to the downstream handler effect.
  */
 export const CloudflareBindingsMiddlewareLive = Layer.succeed(

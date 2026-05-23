@@ -6,7 +6,7 @@
  *
  * @module
  */
-import { ServiceMap } from "effect"
+import { Context } from "effect"
 
 /**
  * ExecutionContext interface for Cloudflare Workers.
@@ -26,7 +26,7 @@ export interface WorkerExecutionContext {
  * const myEnv = env as MyEnvType
  * ```
  */
-export class CloudflareBindings extends ServiceMap.Service<
+export class CloudflareBindings extends Context.Service<
   CloudflareBindings,
   { readonly env: unknown; readonly ctx: WorkerExecutionContext }
 >()("@repo/cloudflare/CloudflareBindings") {}

@@ -1,17 +1,17 @@
 /**
  * Cloudflare Bindings Service
  *
- * ServiceMap.Reference bridge for providing Cloudflare's `env` and `ExecutionContext`
+ * Context.Reference bridge for providing Cloudflare's `env` and `ExecutionContext`
  * to Effect handlers.
  *
  * @module
  */
-import { Effect, ServiceMap } from "effect"
+import { Effect, Context } from "effect"
 
 /**
  * Reference holding the current request's Cloudflare environment bindings.
  */
-export const currentEnv = ServiceMap.Reference<Env | null>(
+export const currentEnv = Context.Reference<Env | null>(
   "@app/rpc/currentEnv",
   { defaultValue: () => null }
 )
@@ -19,7 +19,7 @@ export const currentEnv = ServiceMap.Reference<Env | null>(
 /**
  * Reference holding the current request's ExecutionContext.
  */
-export const currentCtx = ServiceMap.Reference<ExecutionContext | null>(
+export const currentCtx = Context.Reference<ExecutionContext | null>(
   "@app/rpc/currentCtx",
   { defaultValue: () => null }
 )

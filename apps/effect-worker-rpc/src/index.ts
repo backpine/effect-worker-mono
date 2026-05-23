@@ -5,7 +5,7 @@
  *
  * @module
  */
-import { pipe, ServiceMap } from "effect"
+import { pipe, Context } from "effect"
 import { rpcHandler } from "@/runtime"
 import { currentEnv, currentCtx } from "@/services/cloudflare"
 
@@ -21,10 +21,10 @@ export default {
       return Response.json({ status: "ok", service: "effect-worker-rpc" })
     }
 
-    // Pass per-request Cloudflare bindings via ServiceMap context
+    // Pass per-request Cloudflare bindings via Context context
     const services = pipe(
-      ServiceMap.make(currentEnv, env),
-      ServiceMap.add(currentCtx, ctx)
+      Context.make(currentEnv, env),
+      Context.add(currentCtx, ctx)
     )
 
     return rpcHandler(request, services)

@@ -27,7 +27,8 @@ proto[Symbol.iterator] = function () {
 proto.asEffect = function () {
   return Effect.tryPromise({
     try: () => this.execute(),
-    catch: (cause) => new SqlError.SqlError({ cause })
+    catch: (cause) =>
+      new SqlError.SqlError({ reason: new SqlError.UnknownError({ cause }) })
   })
 }
 
@@ -44,7 +45,8 @@ selectProto[Symbol.iterator] = function () {
 selectProto.asEffect = function () {
   return Effect.tryPromise({
     try: () => this.execute(),
-    catch: (cause) => new SqlError.SqlError({ cause })
+    catch: (cause) =>
+      new SqlError.SqlError({ reason: new SqlError.UnknownError({ cause }) })
   })
 }
 
