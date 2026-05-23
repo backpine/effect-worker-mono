@@ -2,6 +2,38 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Effect v4 — Vendored Source Reference (`repos/effect`)
+
+This project runs **Effect v4 (`4.0.0-beta.70`)**, a fast-moving beta whose public
+docs lag the actual APIs. The full Effect v4 source is vendored at **`repos/effect`**
+(a `git subtree` of the `next-major` branch) specifically so you can read real
+implementations instead of guessing or relying on outdated web docs.
+
+**Use it as your primary reference for Effect v4 questions:**
+
+- Resolving an API: read the source/types under `repos/effect/packages/effect/src/`.
+  Module names map 1:1 to imports — `Context` → `repos/effect/packages/effect/src/Context.ts`,
+  `Effect` → `Effect.ts`, etc. Unstable APIs live under `src/unstable/` (e.g.
+  `src/unstable/rpc/`, `src/unstable/http/`, `src/unstable/httpapi/`, `src/unstable/sql/`,
+  `src/unstable/reactivity/`).
+- Verifying a signature, error shape, or option before using it — grep the source
+  rather than assuming v3 patterns hold.
+- Finding idiomatic usage — search `**/*.test.ts` and `examples/` inside `repos/effect`.
+
+**Rules:**
+
+- `repos/effect` is **read-only reference material**. Never edit it, import from it,
+  or include it in app/package code — apps depend on the published `effect` package
+  via the `pnpm-workspace.yaml` catalog, not on the vendored tree.
+- It is intentionally excluded from search, auto-imports, and file watching (see
+  `.vscode/settings.json`) and from the pnpm/tsc/vitest workspaces.
+- Keep it current with the `git subtree pull` command in the Commands section.
+
+**v4 gotchas already encountered** (the source is the source of truth if these drift):
+the `ServiceMap` module was renamed back to `Context` (`Context.Service`,
+`Context.Reference`, `Context.make`); `SqlError` now wraps a structured reason
+(`new SqlError({ reason: new UnknownError({ cause }) })`).
+
 ## Commands
 
 ```bash
@@ -22,6 +54,10 @@ DATABASE_URL=postgres://... pnpm db:push      # Push schema to database
 DATABASE_URL=postgres://... pnpm db:studio    # Open Drizzle Studio
 DATABASE_URL=postgres://... pnpm db:generate  # Generate migrations
 DATABASE_URL=postgres://... pnpm db:migrate   # Run migrations
+
+# Update the vendored Effect v4 source (repos/effect) to latest next-major
+git subtree pull --prefix=repos/effect \
+  https://github.com/Effect-TS/effect.git next-major --squash
 ```
 
 ## Architecture

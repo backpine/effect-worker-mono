@@ -1,6 +1,17 @@
 {
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.preferences.importModuleSpecifier": "relative",
+  // Vendored Effect v4 source (repos/effect) is read-only reference material for
+  // coding agents. Keep it out of search, auto-imports, and file watching so it
+  // never pollutes results or gets imported from by accident.
+  "search.exclude": {
+    "repos/**": true
+  },
+  "files.watcherExclude": {
+    "**/repos/**": true
+  },
+  "typescript.preferences.autoImportFileExcludePatterns": ["repos/**"],
+  "javascript.preferences.autoImportFileExcludePatterns": ["repos/**"],
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "editor.formatOnSave": true,
   "eslint.format.enable": true,
