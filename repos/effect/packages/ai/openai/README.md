@@ -1,1 +1,0 @@
-# @effect/ai-openai
