@@ -1,0 +1,1 @@
+`@effect/platform-browser` provides browser-specific implementations for the abstractions defined in [`@effect/platform`](https://github.com/Effect-TS/effect/tree/main/packages/platform). This allows you to write platform-independent code that can seamlessly run in the browser, leveraging browser capabilities while keeping your application portable across multiple environments.
