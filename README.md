@@ -21,8 +21,8 @@ pnpm dev              # Start dev server
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Applications                              │
 │  ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐│
-│  │effect-worker-api │ │ effect-worker-rpc│ │  tanstack-start  ││
-│  │   (HTTP REST)    │ │    (RPC JSON)    │ │  (Full-Stack UI) ││
+│  │effect-worker-api │ │     react-app    │ │  tanstack-start  ││
+│  │   (HTTP REST)    │ │(SPA + RPC Worker)│ │  (Full-Stack UI) ││
 │  └──────────────────┘ └──────────────────┘ └──────────────────┘│
 ├─────────────────────────────────────────────────────────────────┤
 │                     Shared Packages                              │
@@ -97,18 +97,21 @@ pnpm deploy     # Deploy to Cloudflare
 - `GET /users/:id` - Get user by ID
 - `POST /users` - Create user
 
-### `effect-worker-rpc`
-RPC API using `@effect/rpc` for procedure-based communication.
+### `react-app`
+React SPA (Vite + TanStack Router) with an Effect RPC server co-located in
+`worker/`. The Cloudflare Vite plugin runs the worker alongside the SPA, so the
+client calls the relative path `/rpc` — one app, one origin, no separate RPC
+service. The worker uses Effect `RpcServer` over the shared `UsersRpc` contract
+and the SPA queries it through `@effect/atom-react` (see `src/atoms/`).
 
 ```bash
-cd apps/effect-worker-rpc
-pnpm dev        # Local dev server
-pnpm deploy     # Deploy to Cloudflare
+cd apps/react-app
+pnpm dev        # SPA + RPC worker on one dev server (port 3001)
+pnpm deploy     # Build + deploy to Cloudflare
 ```
 
 **Endpoints:**
-- `GET /health` - Health check
-- `POST /rpc` - RPC endpoint
+- `POST /rpc` - Effect RPC endpoint (UsersRpc: listUsers / getUser / createUser)
 
 ### `tanstack-start`
 Full-stack React application with TanStack Start, featuring Effect-TS integration via middleware.
@@ -241,7 +244,9 @@ effect-worker-mono/
 │   │   │   ├── handlers/      # Handler implementations
 │   │   │   └── services/      # Middleware implementations
 │   │   └── wrangler.jsonc     # Cloudflare config
-│   ├── effect-worker-rpc/     # RPC API
+│   ├── react-app/             # React SPA + co-located Effect RPC worker
+│   │   ├── src/               # SPA (atoms call /rpc via @effect/atom-react)
+│   │   └── worker/            # Effect RpcServer (UsersRpc) served at /rpc
 │   └── tanstack-start/        # Full-stack React app
 │       ├── src/
 │       │   ├── routes/        # File-based routes

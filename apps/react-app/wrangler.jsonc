@@ -4,6 +4,12 @@
   "main": "./worker/index.ts",
   "compatibility_date": "2025-04-01",
   "assets": {
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    // Route RPC requests to the Worker; everything else is served as a static
+    // asset (with SPA fallback). Lets the SPA and the Effect RPC server share one
+    // origin, so the client calls the relative path `/rpc`. Both the bare path
+    // and the trailing-slash form (what the RPC client actually posts to) route
+    // to the Worker.
+    "run_worker_first": ["/rpc", "/rpc/"]
   }
 }

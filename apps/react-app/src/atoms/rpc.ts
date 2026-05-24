@@ -4,7 +4,8 @@ import { RpcClient, RpcSerialization } from "effect/unstable/rpc"
 import * as Atom from "effect/unstable/reactivity/Atom"
 
 const RpcLayer = RpcClient.layerProtocolHttp({ url: "/rpc" }).pipe(
-  Layer.provide(RpcSerialization.layerNdjson),
+  // JSON serialization (unary calls) — must match the worker's RpcSerialization.
+  Layer.provide(RpcSerialization.layerJson),
   Layer.provide(FetchHttpClient.layer),
 )
 

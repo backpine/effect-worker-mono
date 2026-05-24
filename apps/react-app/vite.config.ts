@@ -6,11 +6,6 @@ import tailwindcss from "@tailwindcss/vite";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  server: {
-    proxy: {
-      "/rpc": "http://localhost:8787",
-    },
-  },
   plugins: [
     viteTsConfigPaths({
       projects: ["./tsconfig.json"],

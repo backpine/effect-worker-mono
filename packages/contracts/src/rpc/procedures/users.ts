@@ -8,7 +8,6 @@
  */
 import { Rpc, RpcGroup } from "effect/unstable/rpc"
 import { Schema as S } from "effect"
-import { RpcDatabaseMiddleware } from "../middleware"
 
 // ============================================================================
 // RPC Error Schemas
@@ -72,14 +71,14 @@ export const getUser = Rpc.make("getUser", {
   payload: S.Struct({ id: S.String }),
   success: UserRpcSchema,
   error: UserNotFoundErrorSchema
-}).middleware(RpcDatabaseMiddleware)
+})
 
 /**
  * List all users.
  */
 export const listUsers = Rpc.make("listUsers", {
   success: UsersListRpcSchema
-}).middleware(RpcDatabaseMiddleware)
+})
 
 /**
  * Create a new user.
@@ -91,7 +90,7 @@ export const createUser = Rpc.make("createUser", {
   }),
   success: UserRpcSchema,
   error: S.Union([DuplicateEmailErrorSchema, ValidationErrorSchema])
-}).middleware(RpcDatabaseMiddleware)
+})
 
 // ============================================================================
 // RPC Group
