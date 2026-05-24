@@ -13,7 +13,9 @@ description: >-
 
 This repo runs **Effect v4 (`4.0.0-beta.70`)**. Public docs lag the real APIs, and v3
 patterns frequently do **not** apply. The complete Effect v4 source is vendored at
-**`repos/effect`** (a `git subtree` of the `next-major` branch). Treat it as the
+**`repos/effect`** (a `git subtree` of **`Effect-TS/effect-smol`**, the v4 dev repo,
+pinned to the `effect@4.0.0-beta.70` tag — it matches the installed version exactly).
+v4 lives in `effect-smol`, NOT `Effect-TS/effect` (still v3). Treat it as the
 authoritative reference — read it instead of guessing or trusting web search.
 
 ## Golden rule
@@ -56,7 +58,8 @@ All under `repos/effect/packages/effect/src/`. Module name maps 1:1 to the impor
 - It's excluded from search/auto-import/watching (`.vscode/settings.json`) and from the
   pnpm / tsc / vitest workspaces, so it won't interfere with builds.
 - To refresh it:
-  `git subtree pull --prefix=repos/effect https://github.com/Effect-TS/effect.git next-major --squash`
+  `git subtree pull --prefix=repos/effect https://github.com/Effect-TS/effect-smol.git effect@4.0.0-beta.70 --squash`
+  (re-pin the tag to whatever version the catalog uses; use `main` for the latest)
 
 ## Known v4 deltas (verify against source if in doubt)
 

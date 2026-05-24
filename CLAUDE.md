@@ -6,8 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This project runs **Effect v4 (`4.0.0-beta.70`)**, a fast-moving beta whose public
 docs lag the actual APIs. The full Effect v4 source is vendored at **`repos/effect`**
-(a `git subtree` of the `next-major` branch) specifically so you can read real
-implementations instead of guessing or relying on outdated web docs.
+(a `git subtree` of **`Effect-TS/effect-smol`** — the v4 dev repo — pinned to the
+`effect@4.0.0-beta.70` tag, so it exactly matches the version we compile against)
+specifically so you can read real implementations instead of guessing or relying on
+outdated web docs. Note: v4 lives in `effect-smol`, NOT `Effect-TS/effect` (that repo
+is still v3).
 
 **Use it as your primary reference for Effect v4 questions:**
 
@@ -55,9 +58,11 @@ DATABASE_URL=postgres://... pnpm db:studio    # Open Drizzle Studio
 DATABASE_URL=postgres://... pnpm db:generate  # Generate migrations
 DATABASE_URL=postgres://... pnpm db:migrate   # Run migrations
 
-# Update the vendored Effect v4 source (repos/effect) to latest next-major
+# Update the vendored Effect v4 source (repos/effect) when bumping the catalog.
+# Pin to the tag that matches the installed version (e.g. effect@4.0.0-beta.NN),
+# or use `main` for the latest. Source repo is effect-smol (v4), NOT Effect-TS/effect.
 git subtree pull --prefix=repos/effect \
-  https://github.com/Effect-TS/effect.git next-major --squash
+  https://github.com/Effect-TS/effect-smol.git effect@4.0.0-beta.70 --squash
 ```
 
 ## Architecture
