@@ -1,25 +1,45 @@
 /**
- * Cloudflare Worker Entry Point
+ * Cloudflare Worker entry point — Effect HTTP API
  *
- * Main entry point for the Cloudflare Worker HTTP API.
+ * Same shape as the RPC worker (`apps/react-app/worker`): the API is an
+ * `HttpEffect` (built in `runtime.ts` via `HttpRouter.toHttpEffect`), and per
+ * request we flatten it, provide the typed Cloudflare `Bindings` and the
+ * incoming request as `HttpServerRequest`, run it in a fresh `Scope`, and
+ * convert the `HttpServerResponse` to a Web `Response`. No nullable env/ctx
+ * bridge, no `HttpRouter.toWebHandler` ceremony, no casting.
  *
  * @module
  */
-import { pipe, Context } from "effect"
-import { handler } from "@/runtime"
-import { currentEnv, currentCtx } from "@/services/cloudflare"
+import { Effect } from "effect"
+import {
+  HttpServerRequest,
+  HttpServerResponse,
+} from "effect/unstable/http"
+import { apiApp } from "@/runtime"
+import { Bindings } from "@/services"
 
-/**
- * Cloudflare Worker fetch handler.
- */
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext) {
-    // Pass per-request Cloudflare bindings via Context context
-    const services = pipe(
-      Context.make(currentEnv, env),
-      Context.add(currentCtx, ctx)
+  fetch(
+    request: Request,
+    env: Env,
+    ctx: ExecutionContext,
+  ): Promise<Response> {
+    return Effect.runPromise(
+      apiApp.pipe(
+        Effect.flatten,
+        Effect.provideService(Bindings, { env, ctx }),
+        Effect.provideService(
+          HttpServerRequest.HttpServerRequest,
+          HttpServerRequest.fromWeb(request),
+        ),
+        Effect.catchCause(() =>
+          Effect.succeed(
+            HttpServerResponse.text("Internal Server Error", { status: 500 }),
+          ),
+        ),
+        Effect.scoped,
+        Effect.map(HttpServerResponse.toWeb),
+      ),
     )
-
-    return handler(request, services)
-  }
+  },
 } satisfies ExportedHandler<Env>

@@ -1,92 +1,44 @@
 /**
  * Middleware Implementations
  *
- * App-specific implementations of middleware defined in @repo/contracts.
+ * App-specific implementation of the `DatabaseMiddleware` tag from
+ * `@repo/contracts`. In Effect v4, a middleware that `provides` a service is a
+ * function that wraps the downstream HTTP effect and provides that service.
  *
- * In Effect v4, middleware with `provides` is a function that wraps the
- * httpEffect and provides the required service to it.
+ * The middleware reads the typed `Bindings` at layer-build time (so the per-request
+ * `env` is a layer dependency, not a leftover requirement of the wrapped effect),
+ * then opens a request-scoped `PgDrizzle` connection from the Hyperdrive binding.
+ * Only groups that declare `DatabaseMiddleware` (the `users` group) connect — the
+ * health check never touches the database.
  *
  * @module
  */
-import { Effect, Layer } from "effect";
-import {
-  CloudflareBindingsMiddleware,
-  CloudflareBindingsError,
-  CloudflareBindings,
+import { Effect, Layer } from "effect"
+import { DatabaseMiddleware, DatabaseConnectionError } from "@repo/contracts"
+import { PgDrizzle, makeDrizzle } from "@repo/db"
+import { Bindings } from "@/services/cloudflare"
+
+export const DatabaseMiddlewareLive = Layer.effect(
   DatabaseMiddleware,
-  DatabaseConnectionError,
-} from "@repo/contracts";
-import { PgDrizzle, makeDrizzle } from "@repo/db";
-import { currentEnv, currentCtx } from "@/services/cloudflare";
+  Effect.gen(function* () {
+    const { env } = yield* Bindings
+    return (httpEffect) =>
+      Effect.gen(function* () {
+        // Only the connection attempt maps to DatabaseConnectionError; downstream
+        // handler errors (e.g. UserCreationError) must propagate unchanged.
+        const db = yield* makeDrizzle(env.HYPERDRIVE.connectionString).pipe(
+          Effect.catch(() =>
+            Effect.fail(
+              new DatabaseConnectionError({
+                message: "Database connection failed",
+              }),
+            ),
+          ),
+        )
+        return yield* httpEffect.pipe(Effect.provideService(PgDrizzle, db))
+      })
+  }),
+)
 
-/**
- * Live implementation of CloudflareBindingsMiddleware.
- *
- * Reads env/ctx from Context.Reference and provides CloudflareBindings
- * to the downstream handler effect.
- */
-export const CloudflareBindingsMiddlewareLive = Layer.succeed(
-  CloudflareBindingsMiddleware,
-  (httpEffect) =>
-    Effect.gen(function* () {
-      const env = yield* currentEnv;
-      const ctx = yield* currentCtx;
-
-      if (env === null || ctx === null) {
-        return yield* Effect.fail(
-          new CloudflareBindingsError({
-            message:
-              "Cloudflare bindings not available. Ensure withCloudflareBindings() wraps the handler.",
-          }),
-        );
-      }
-
-      return yield* httpEffect.pipe(
-        Effect.provideService(CloudflareBindings, { env, ctx }),
-      );
-    }),
-);
-
-/**
- * Live implementation of DatabaseMiddleware.
- *
- * Creates a scoped PgDrizzle instance per-request and provides it
- * to the downstream handler effect.
- */
-export const DatabaseMiddlewareLive = Layer.succeed(
-  DatabaseMiddleware,
-  (httpEffect) =>
-    Effect.gen(function* () {
-      const env = yield* currentEnv;
-      if (env === null) {
-        return yield* Effect.fail(
-          new DatabaseConnectionError({
-            message:
-              "Cloudflare env not available. Ensure withCloudflareBindings() wraps the handler.",
-          }),
-        );
-      }
-
-      const db = yield* makeDrizzle(env.HYPERDRIVE.connectionString);
-
-      return yield* httpEffect.pipe(
-        Effect.provideService(PgDrizzle, db),
-      );
-    }).pipe(
-      Effect.catch(() =>
-        Effect.fail(
-          new DatabaseConnectionError({
-            message: "Database connection failed",
-          }),
-        ),
-      ),
-    ),
-);
-
-/**
- * Combined middleware layer.
- */
-export const MiddlewareLive = Layer.mergeAll(
-  CloudflareBindingsMiddlewareLive,
-  DatabaseMiddlewareLive,
-);
+/** Combined middleware layer (currently just the database middleware). */
+export const MiddlewareLive = DatabaseMiddlewareLive

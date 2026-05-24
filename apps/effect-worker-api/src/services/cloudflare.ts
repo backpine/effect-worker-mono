@@ -1,67 +1,20 @@
 /**
  * Cloudflare Bindings Service
  *
- * Context.Reference bridge for providing Cloudflare's `env` and `ExecutionContext`
- * to Effect handlers.
+ * A typed, non-nullable service holding the current request's Cloudflare `env`
+ * and `ExecutionContext`. It is provided once per request at the worker entry
+ * point (`index.ts`), so handlers and middleware read `env`/`ctx` directly —
+ * no nullable `Context.Reference` bridge, no null checks, and no casting (the
+ * `env` is the worker's generated `Env` type).
  *
  * @module
  */
-import { Effect, Context } from "effect"
+import { Context } from "effect"
 
-/**
- * Reference holding the current request's Cloudflare environment bindings.
- */
-export const currentEnv = Context.Reference<Env | null>(
-  "@app/api/currentEnv",
-  { defaultValue: () => null }
-)
-
-/**
- * Reference holding the current request's ExecutionContext.
- */
-export const currentCtx = Context.Reference<ExecutionContext | null>(
-  "@app/api/currentCtx",
-  { defaultValue: () => null }
-)
-
-/**
- * Set Cloudflare bindings for the scope of an effect.
- *
- * Call this at the request boundary in index.ts:
- *
- * ```typescript
- * const effect = handleRequest(request).pipe(
- *   withCloudflareBindings(env, ctx),
- * )
- * return runtime.runPromise(effect)
- * ```
- */
-export const withCloudflareBindings = (env: Env, ctx: ExecutionContext) =>
-  <A, E, R>(effect: Effect.Effect<A, E, R>) =>
-    effect.pipe(
-      Effect.provideService(currentEnv, env),
-      Effect.provideService(currentCtx, ctx)
-    )
-
-/**
- * Schedule a background task that runs after the response is sent.
- *
- * Uses ctx.waitUntil() to keep the Worker alive while the effect runs.
- * Errors are logged but don't affect the response.
- */
-export const waitUntil = <A, E>(
-  effect: Effect.Effect<A, E>
-): Effect.Effect<void> =>
-  Effect.gen(function* () {
-    const ctx = yield* currentCtx
-    if (ctx) {
-      ctx.waitUntil(
-        Effect.runPromise(
-          effect.pipe(
-            Effect.tapCause(Effect.logError),
-            Effect.catch(() => Effect.void)
-          )
-        )
-      )
-    }
-  })
+export class Bindings extends Context.Service<
+  Bindings,
+  {
+    readonly env: Env
+    readonly ctx: ExecutionContext
+  }
+>()("@app/api/Bindings") {}
