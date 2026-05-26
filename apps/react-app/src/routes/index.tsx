@@ -1,7 +1,7 @@
 import { Suspense, useState } from "react"
 import { createFileRoute } from "@tanstack/react-router"
 import { useAtomValue, useAtomSet } from "@effect/atom-react"
-import { Cause, DateTime } from "effect"
+import { Cause } from "effect"
 import { Button } from "@/components/ui/button"
 import { usersAtom, createUserFn } from "@/atoms"
 
@@ -113,7 +113,7 @@ function UsersList() {
               <p className="text-sm text-muted-foreground">{user.email}</p>
             </div>
             <p className="text-xs text-muted-foreground">
-              {DateTime.toDate(user.createdAt).toLocaleDateString()}
+              {user.createdAt.toLocaleDateString()}
             </p>
           </div>
         ))}

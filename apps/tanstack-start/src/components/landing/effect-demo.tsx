@@ -155,7 +155,7 @@ export function EffectDemo() {
         yield* Effect.log(\`Hello \${data.name}\`)
 
         // Access services via yield*
-        // const db = yield* PgDrizzle
+        // const db = yield* Database
 
         return {
           message: \`Hello, \${data.name}!\`,

@@ -38,13 +38,13 @@ pnpm dev              # Start dev server
 All packages use the `@repo/*` namespace for internal monorepo imports.
 
 ### `@repo/domain`
-Core domain types, branded schemas, and errors.
+Core domain schemas and errors (Effect Schema).
 
 ```typescript
-import { UserId, UserSchema, UserNotFoundError } from "@repo/domain"
+import { CreateUserSchema, UserNotFoundError } from "@repo/domain"
 
-// Branded types for type-safe IDs
-const id: UserId = "usr_abc123" as UserId
+// Schemas provide both compile-time types and runtime validation.
+type CreateUser = typeof CreateUserSchema.Type
 ```
 
 ### `@repo/contracts`
@@ -62,22 +62,30 @@ import { WorkerApi, UsersGroup, UsersRpc } from "@repo/contracts"
 - `UsersRpc` - User operations via RPC
 
 ### `@repo/cloudflare`
-Infrastructure layer for Cloudflare Workers integration with Effect.
+Effectful, type-safe Cloudflare bindings. Keeps the `wrangler types` workflow
+(the typed `env` from `cloudflare:workers`) and adds an Effect SDK on top:
+bindings become yieldable, error-typed, and composable.
 
 ```typescript
-import {
-  withCloudflareBindings,  // Wrap effects with env/ctx
-  CloudflareBindings,       // Service tag
-  PgDrizzle,               // Database connection
-  currentEnv,              // FiberRef for env access
-} from "@repo/cloudflare"
+import { makeCloudflare } from "@repo/cloudflare"
+
+// Build cast-free accessors over your typed Env.
+const { hyperdrive, r2, kv, queue } = makeCloudflare<Env>(() => env)
+
+// In a handler:
+const { connectionString } = yield* hyperdrive((e) => e.HYPERDRIVE)
 ```
 
 ### `@repo/db`
-Drizzle ORM schema definitions.
+Drizzle ORM schema, the `Database` service tag, the request-scoped `connect`
+factory, and reusable Effect query programs.
 
 ```typescript
-import { users } from "@repo/db"
+import { users, Database, connect } from "@repo/db"
+
+// `Database` is provided per request via middleware; handlers just yield it.
+const db = yield* Database
+const rows = yield* db.select().from(users)
 ```
 
 ## Applications
@@ -156,7 +164,7 @@ export const myFunction = createServerFn()
   .handler(async ({ context }) => {
     return context.runEffect(
       Effect.gen(function* () {
-        const db = yield* PgDrizzle
+        const db = yield* Database
         return yield* db.select().from(users)
       })
     )
@@ -165,70 +173,75 @@ export const myFunction = createServerFn()
 
 ## Core Patterns
 
-### FiberRef Bridge
-Request-scoped Cloudflare bindings via Effect's FiberRef:
+### Effectful bindings
+Cloudflare bindings are accessed through `@repo/cloudflare`. `makeCloudflare`
+returns cast-free accessors backed by `CloudflareEnv`, a `Context.Reference`
+that defaults to the `cloudflare:workers` env — so reading a binding adds
+nothing to a handler's requirement channel:
 
 ```typescript
-// Entry point wraps effect with bindings
-const effect = handleRequest(request).pipe(withCloudflareBindings(env, ctx))
-return runtime.runPromise(effect)
+const { hyperdrive, r2, kv } = makeCloudflare<Env>(() => env)
 
-// Handlers access via service
 Effect.gen(function* () {
-  const { env } = yield* CloudflareBindings
-  // Use env.MY_KV, env.MY_R2, etc.
+  const { connectionString } = yield* hyperdrive((e) => e.HYPERDRIVE)
+  // ...
 })
 ```
 
-### Middleware Pattern
-Contracts define abstract middleware tags, apps provide implementations:
+### Request-scoped database via middleware
+On Cloudflare the Postgres socket must be opened **per request**. Contracts
+define an abstract middleware tag that *provides* `Database`; apps implement it
+by opening a connection inside the request `Scope` and providing it downstream.
+The type system makes it impossible to ship a DB-using route without wiring it.
 
 ```typescript
-// In contracts (abstract)
-export class DatabaseMiddleware extends HttpApiMiddleware.Tag<DatabaseMiddleware>()(
-  "DatabaseMiddleware",
-  { failure: DatabaseConnectionError, provides: PgDrizzle }
-) {}
-
-// In app (implementation)
-export const DatabaseMiddlewareLive = Layer.effect(
+// In contracts (abstract): the tag declares what it provides.
+export class DatabaseMiddleware extends HttpApiMiddleware.Service<
   DatabaseMiddleware,
-  Effect.gen(function* () {
-    const drizzle = yield* makeDrizzle()
-    return drizzle
-  })
+  { provides: Database }
+>()("@repo/api/DatabaseMiddleware", { error: DatabaseConnectionError }) {}
+
+// In app (implementation): a function that wraps the downstream effect,
+// opens the request-scoped connection, and provides Database.
+export const DatabaseMiddlewareLive = Layer.succeed(
+  DatabaseMiddleware,
+  (httpEffect) =>
+    Effect.gen(function* () {
+      const { connectionString } = yield* hyperdrive((e) => e.HYPERDRIVE)
+      const db = yield* connect(connectionString).pipe(
+        Effect.catch(() =>
+          Effect.fail(new DatabaseConnectionError({ message: "Database connection failed" }))
+        )
+      )
+      return yield* httpEffect.pipe(Effect.provideService(Database, db))
+    })
 )
 ```
 
 ### Handler Implementation
-Type-safe handlers using Effect generators:
+Handlers yield `Database` directly (provided by the middleware above):
 
 ```typescript
-export const UsersGroupLive = HttpApiBuilder.group(
-  WorkerApi,
-  "users",
-  (handlers) => handlers
-    .handle("list", () => Effect.gen(function* () {
-      const drizzle = yield* PgDrizzle
-      return yield* drizzle.select().from(users)
-    }))
-    .handle("get", ({ path: { id } }) => Effect.gen(function* () {
-      const drizzle = yield* PgDrizzle
-      const user = yield* drizzle.select().from(users).where(eq(users.id, id))
-      if (!user) return yield* Effect.fail(new UserNotFoundError({ id }))
-      return user
-    }))
-)
+.handle("list", () => Effect.gen(function* () {
+  const db = yield* Database
+  return yield* db.select().from(users)
+}))
+.handle("get", ({ path: { id } }) => Effect.gen(function* () {
+  const db = yield* Database
+  const [user] = yield* db.select().from(users).where(eq(users.id, id))
+  if (!user) return yield* Effect.fail(new UserNotFoundError({ id, message: "Not found" }))
+  return user
+}))
 ```
 
 ### Error Handling
-Typed errors with automatic HTTP status mapping:
+Typed errors with automatic HTTP status mapping via `httpApiStatus`:
 
 ```typescript
-export class UserNotFoundError extends S.TaggedError<UserNotFoundError>()(
+export class UserNotFoundError extends S.TaggedErrorClass<UserNotFoundError>()(
   "UserNotFoundError",
-  { id: UserIdSchema, message: S.String },
-  HttpApiSchema.annotations({ status: 404 })
+  { id: S.Number, message: S.String },
+  { httpApiStatus: 404 }
 ) {}
 ```
 
@@ -265,14 +278,17 @@ effect-worker-mono/
 │   │   └── src/
 │   │       ├── http/          # HTTP endpoints
 │   │       └── rpc/           # RPC procedures
-│   ├── cloudflare/            # Worker infrastructure
+│   ├── cloudflare/            # Effectful Cloudflare bindings
 │   │   └── src/
-│   │       ├── fiber-ref.ts   # FiberRef bridge
-│   │       ├── services.ts    # Service tags
-│   │       └── database.ts    # Connection factory
-│   └── db/                    # Database schema
-│       └── src/schema.ts      # Drizzle tables
-└── reports/                   # Architecture decisions
+│   │       ├── make.ts        # makeCloudflare accessors
+│   │       └── {r2,kv,queue}.ts  # Per-binding effect wrappers
+│   └── db/                    # Database
+│       └── src/
+│           ├── schema.ts      # Drizzle tables
+│           ├── database.ts    # Database service tag
+│           ├── connect.ts     # Request-scoped connection factory
+│           └── queries/       # Reusable Effect query programs
+└── designs/                   # Design docs & architecture decisions
 ```
 
 ## Configuration
@@ -325,7 +341,7 @@ The `HYPERDRIVE` suffix must match your binding name. Wrangler will automaticall
 
 **Usage in middleware:**
 ```typescript
-return yield* makeDrizzle(env.HYPERDRIVE.connectionString)
+const db = yield* connect(env.HYPERDRIVE.connectionString)
 ```
 
 ## Scripts
@@ -343,25 +359,24 @@ return yield* makeDrizzle(env.HYPERDRIVE.connectionString)
 | Category | Technology |
 |----------|-----------|
 | Runtime | Cloudflare Workers |
-| Framework | Effect-TS |
-| HTTP | @effect/platform |
-| RPC | @effect/rpc |
+| Framework | Effect-TS v4 (`effect@4.0.0-beta.70`) |
+| HTTP | `effect/unstable/httpapi` |
+| RPC | `effect/unstable/rpc` |
 | Full-Stack UI | TanStack Start + TanStack Router + TanStack Query |
-| Database | Drizzle ORM + PostgreSQL |
+| Database | Drizzle ORM (`drizzle-orm/effect-postgres`) + PostgreSQL |
 | Build | pnpm workspaces + TypeScript |
 | Testing | Vitest + @effect/vitest |
 | Deployment | Wrangler |
 
 ## Key Dependencies
 
-- **effect** - Core functional effects runtime
-- **@effect/platform** - HTTP server & middleware
-- **@effect/rpc** - RPC protocol
-- **@effect/sql-drizzle** - Database integration
+- **effect** (`4.0.0-beta.70`) - Core runtime; HTTP/RPC live under `effect/unstable/*`
+- **@effect/sql-pg** - PostgreSQL client (underlies the Drizzle connection)
+- **@effect/atom-react** - Reactive state for the React SPA
+- **drizzle-orm** (`1.0.0-rc.3`) - Type-safe ORM; `drizzle-orm/effect-postgres` client
 - **@tanstack/react-start** - Full-stack React framework
 - **@tanstack/react-router** - Type-safe file-based routing
 - **@tanstack/react-query** - Server state management
-- **drizzle-orm** - Type-safe ORM
 - **wrangler** - Cloudflare Workers CLI
 
 ## Development Workflow

@@ -1,17 +1,18 @@
 /**
  * Database HTTP Middleware
  *
- * HttpApiMiddleware that provides PgDrizzle to HTTP handlers.
- * The implementation is provided by the app.
+ * HttpApiMiddleware that provides the `Database` service to HTTP handlers.
+ * The implementation (which opens the request-scoped connection) is provided
+ * by the app.
  *
  * @module
  */
 import { HttpApiMiddleware } from "effect/unstable/httpapi"
-import { PgDrizzle } from "@repo/db/pg-drizzle/tag"
+import { Database } from "@repo/db/database"
 import { DatabaseConnectionError } from "@repo/domain"
 
 /**
- * Middleware that provides PgDrizzle to HTTP handlers.
+ * Middleware that provides `Database` to HTTP handlers.
  *
  * Apply to groups that need database access:
  *
@@ -24,16 +25,16 @@ import { DatabaseConnectionError } from "@repo/domain"
  *
  * The implementation must be provided by the app via Layer.
  *
- * Handlers can then use PgDrizzle directly:
+ * Handlers can then use `Database` directly:
  *
  * ```typescript
- * const drizzle = yield* PgDrizzle
- * const users = yield* drizzle.select().from(usersTable)
+ * const db = yield* Database
+ * const users = yield* db.select().from(usersTable)
  * ```
  */
 export class DatabaseMiddleware extends HttpApiMiddleware.Service<
   DatabaseMiddleware,
-  { provides: PgDrizzle }
+  { provides: Database }
 >()("@repo/api/DatabaseMiddleware", {
   error: DatabaseConnectionError
 }) {}

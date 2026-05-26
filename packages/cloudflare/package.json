@@ -1,9 +1,9 @@
 {
-  "name": "@repo/db",
+  "name": "@repo/cloudflare",
   "version": "0.0.0",
   "type": "module",
   "license": "MIT",
-  "description": "Database schema and queries for Effect Worker",
+  "description": "Effectful, type-safe Cloudflare bindings for Effect Workers",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -19,20 +19,10 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "check": "tsc --noEmit",
-    "test": "vitest",
-    "clean": "rm -rf dist",
-    "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "clean": "rm -rf dist"
   },
   "dependencies": {
-    "drizzle-orm": "1.0.0-rc.3",
     "effect": "catalog:",
-    "@effect/sql-pg": "catalog:",
-    "@repo/domain": "workspace:*"
-  },
-  "devDependencies": {
-    "drizzle-kit": "1.0.0-rc.3"
+    "@cloudflare/workers-types": "^4.20241127.0"
   }
 }

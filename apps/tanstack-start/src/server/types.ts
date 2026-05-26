@@ -4,8 +4,8 @@
  * Types shared across server functions and middleware.
  */
 import type { Effect } from "effect"
-// Uncomment when adding PgDrizzle service:
-// import type { PgDrizzle } from "@repo/db"
+// Uncomment when adding the Database service:
+// import type { Database } from "@repo/db"
 import { env } from "cloudflare:workers"
 
 /**
@@ -19,13 +19,13 @@ export type CloudflareEnv = typeof env
  * Add your service types here as you create them:
  * @example
  * ```typescript
- * import type { PgDrizzle } from "@repo/db"
+ * import type { Database } from "@repo/db"
  * import type { MyCustomService } from "./services/my-service"
  *
- * export type EffectServices = PgDrizzle | MyCustomService
+ * export type EffectServices = Database | MyCustomService
  * ```
  */
-export type EffectServices = never // Add service types here: PgDrizzle | MyService
+export type EffectServices = never // Add service types here: Database | MyService
 
 /**
  * Context provided by the effect runtime middleware.

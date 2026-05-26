@@ -1,55 +1,27 @@
 /**
  * Users RPC Procedures
  *
- * RPC procedure definitions for user operations.
- * Uses the same domain schemas as HTTP but with RPC-specific error types.
+ * RPC procedure definitions for user operations. The success shape mirrors the
+ * `@repo/db` `users` row directly (numeric id, no domain mapping), and errors
+ * reuse the shared domain error classes the queries fail with. The whole group
+ * requires `Database`, provided by `DatabaseRpcMiddleware`.
  *
  * @module
  */
 import { Rpc, RpcGroup } from "effect/unstable/rpc"
 import { Schema as S } from "effect"
-
-// ============================================================================
-// RPC Error Schemas
-// ============================================================================
+import { UserNotFoundError, UserCreationError } from "@repo/domain"
+import { DatabaseRpcMiddleware } from "../middleware"
 
 /**
- * Error returned when a user is not found.
- */
-export const UserNotFoundErrorSchema = S.Struct({
-  _tag: S.Literal("UserNotFound"),
-  id: S.String,
-  message: S.String
-})
-
-/**
- * Error returned when user creation fails due to duplicate email.
- */
-export const DuplicateEmailErrorSchema = S.Struct({
-  _tag: S.Literal("DuplicateEmail"),
-  email: S.String
-})
-
-/**
- * Error returned when validation fails.
- */
-export const ValidationErrorSchema = S.Struct({
-  _tag: S.Literal("ValidationError"),
-  message: S.String
-})
-
-// ============================================================================
-// Shared Schemas
-// ============================================================================
-
-/**
- * User schema for RPC responses.
+ * User RPC response schema — matches the `users` table row from `@repo/db`.
+ * `createdAt` is a `Date` on the server and an ISO string on the wire.
  */
 export const UserRpcSchema = S.Struct({
-  id: S.String,
+  id: S.Number,
   email: S.String,
   name: S.String,
-  createdAt: S.DateTimeUtc
+  createdAt: S.DateFromString
 })
 
 /**
@@ -60,43 +32,29 @@ export const UsersListRpcSchema = S.Struct({
   total: S.Number
 })
 
-// ============================================================================
-// RPC Procedure Definitions
-// ============================================================================
-
-/**
- * Get a user by ID.
- */
+/** Get a user by numeric id. */
 export const getUser = Rpc.make("getUser", {
-  payload: S.Struct({ id: S.String }),
+  payload: S.Struct({ id: S.Number }),
   success: UserRpcSchema,
-  error: UserNotFoundErrorSchema
+  error: UserNotFoundError
 })
 
-/**
- * List all users.
- */
+/** List all users. */
 export const listUsers = Rpc.make("listUsers", {
   success: UsersListRpcSchema
 })
 
-/**
- * Create a new user.
- */
+/** Create a new user. */
 export const createUser = Rpc.make("createUser", {
-  payload: S.Struct({
-    email: S.String,
-    name: S.String
-  }),
+  payload: S.Struct({ email: S.String, name: S.String }),
   success: UserRpcSchema,
-  error: S.Union([DuplicateEmailErrorSchema, ValidationErrorSchema])
+  error: UserCreationError
 })
 
-// ============================================================================
-// RPC Group
-// ============================================================================
-
 /**
- * Users RPC group containing all user-related procedures.
+ * Users RPC group. `DatabaseRpcMiddleware` provides the request-scoped database
+ * to every procedure (and type-subtracts `Database` from their requirements).
  */
-export const UsersRpc = RpcGroup.make(getUser, listUsers, createUser)
+export const UsersRpc = RpcGroup.make(getUser, listUsers, createUser).middleware(
+  DatabaseRpcMiddleware
+)

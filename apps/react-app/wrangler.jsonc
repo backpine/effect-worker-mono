@@ -3,6 +3,17 @@
   "name": "react-app",
   "main": "./worker/index.ts",
   "compatibility_date": "2025-04-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Hyperdrive — Postgres connection pooling for the RPC worker. In local dev the
+  // CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE env var (.env) backs it.
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "your-hyperdrive-id"
+    }
+  ],
+
   "assets": {
     "not_found_handling": "single-page-application",
     // Route RPC requests to the Worker; everything else is served as a static

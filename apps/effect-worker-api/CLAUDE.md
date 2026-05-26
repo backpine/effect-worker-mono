@@ -1,129 +1,59 @@
-# CLAUDE.md - Effect Worker API
+# CLAUDE.md — Effect Worker API
 
-This document provides guidance for AI assistants working with the Effect Worker API codebase.
+Guidance for working in this app. See the root `CLAUDE.md` for monorepo-wide patterns.
 
-## Project Overview
+## What this is
 
-**Effect Worker API** is a Cloudflare Worker HTTP API built with Effect-TS. It uses the monorepo's shared packages for domain models and API definitions.
+A Cloudflare Worker HTTP REST API built on Effect v4's `HttpApi`. It serves the
+`WorkerApi` contract from `@repo/contracts` and talks to Postgres (via Hyperdrive)
+through `@repo/db`.
 
-### Key Concepts
+## How it's wired
 
-1. **Effect-TS Integration**: All operations use Effect types for composition, error handling, and dependency injection
-2. **Request-Scoped Runtime**: FiberRef bridge makes Cloudflare bindings available at request time
-3. **Layer Memoization**: Static services are instantiated once, request-scoped services via middleware
-4. **Monorepo Packages**: Imports from `@repo/domain` and `@repo/api`
+- **Entry (`src/index.ts`)** — the API is built into an `HttpEffect` via
+  `HttpRouter.toHttpEffect` (`src/runtime.ts`). Per request the worker provides the
+  incoming request as `HttpServerRequest`, runs it in a fresh `Effect.scoped`, and
+  converts the `HttpServerResponse` to a Web `Response`. No `HttpRouter.toWebHandler`,
+  no manual env/ctx threading.
+- **Bindings (`src/services/cloudflare.ts`)** — `@repo/cloudflare`'s
+  `makeCloudflare<Env>(() => env)` gives a type-safe `hyperdrive(...)` accessor over the
+  `cloudflare:workers` `env`.
+- **Request-scoped DB (`src/services/middleware.ts`)** — `DatabaseMiddlewareLive`
+  implements the `DatabaseMiddleware` tag from `@repo/contracts`: it reads the Hyperdrive
+  connection string and opens a request-scoped `Database` via `@repo/db`'s `connect`, then
+  provides it downstream. The connection's lifetime is the request `Scope`. Only groups
+  that declare `.middleware(DatabaseMiddleware)` connect (e.g. `users`, not `health`).
+- **Handlers (`src/handlers/`)** — implement the contract groups and call `@repo/db`
+  query programs (`UserQueries`). They `yield* Database` (via the queries); the middleware
+  type-subtracts it, so a DB-using group without the middleware is a compile error.
 
-## Repository Structure
+## Structure
 
 ```
-effect-worker-api/
-├── src/
-│   ├── index.ts              # Worker entry point (export default)
-│   ├── runtime.ts            # ManagedRuntime + handleRequest
-│   ├── handlers/             # Handler implementations
-│   │   ├── health.ts
-│   │   ├── users.ts
-│   │   └── index.ts
-│   ├── services/             # App-specific services
-│   │   ├── cloudflare.ts     # FiberRef bridge
-│   │   ├── database.ts       # DB connection factory
-│   │   ├── middleware.ts     # Middleware implementations
-│   │   └── index.ts
-│   └── db/
-│       └── schema.ts         # Drizzle schema
-├── test/                     # Test files
-├── wrangler.jsonc            # Cloudflare configuration
-├── package.json
-└── tsconfig.json
+src/
+  index.ts               # Worker fetch entry (toHttpEffect + per-request scope)
+  runtime.ts             # apiApp = HttpRouter.toHttpEffect(HttpApiBuilder.layer(WorkerApi))
+  handlers/              # group handler implementations (call @repo/db queries)
+  services/
+    cloudflare.ts        # @repo/cloudflare bindings (hyperdrive accessor)
+    middleware.ts        # DatabaseMiddlewareLive (request-scoped Database)
+wrangler.jsonc           # Cloudflare config (HYPERDRIVE binding, nodejs_compat)
+.env                     # CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE (local dev)
 ```
 
-## Core Patterns
-
-### 1. FiberRef Bridge
-
-Cloudflare bindings flow into Effect context via FiberRef:
-
-```typescript
-// Entry point wraps effect with bindings
-const effect = handleRequest(request).pipe(
-  withCloudflareBindings(env, ctx)
-)
-return runtime.runPromise(effect)
-```
-
-### 2. Middleware Pattern
-
-Middleware definitions come from `@repo/api`, implementations are local:
-
-```typescript
-// From @repo/api
-export class CloudflareBindingsMiddleware extends HttpApiMiddleware.Tag<...>()
-
-// Local implementation
-export const CloudflareBindingsMiddlewareLive = Layer.effect(
-  CloudflareBindingsMiddleware,
-  Effect.gen(function* () {
-    return Effect.gen(function* () {
-      const env = yield* FiberRef.get(currentEnv)
-      // ...
-    })
-  })
-)
-```
-
-### 3. Handler Pattern
-
-Handlers implement group definitions from `@repo/api`:
-
-```typescript
-export const UsersGroupLive = HttpApiBuilder.group(
-  WorkerApi,  // From @repo/api
-  "users",
-  (handlers) => Effect.gen(function* () {
-    return handlers
-      .handle("list", () => ...)
-      .handle("get", ({ path }) => ...)
-  })
-)
-```
-
-## Development Commands
+## Commands
 
 ```bash
-pnpm dev              # Start local dev server with wrangler
-pnpm test             # Run tests
-pnpm check            # Type checking
-pnpm build            # Build for production
-pnpm deploy           # Deploy to Cloudflare
+pnpm dev        # wrangler dev (local)
+pnpm deploy     # deploy to Cloudflare
+pnpm check      # tsc --noEmit
+pnpm cf-typegen # regenerate Env types after editing wrangler.jsonc
 ```
 
-Database operations are centralized in `@repo/db`:
-```bash
-cd packages/db
-DATABASE_URL=... pnpm db:push    # Push schema to database
-DATABASE_URL=... pnpm db:studio  # Open Drizzle Studio
-```
+Local Postgres for dev lives in `@repo/db` (`docker compose -f ../../packages/db/docker-compose.yml up -d`),
+with migrations applied via `drizzle-kit` (see `@repo/db`).
 
-## Dependencies
+## Conventions
 
-- `@repo/domain` - Domain types, schemas, errors
-- `@repo/api` - API definitions, middleware tags
-- `effect` - Core Effect-TS library
-- `@effect/platform` - HTTP API building
-- `@effect/sql-drizzle` - Database integration
-- `drizzle-orm` - ORM
-
-## Cloudflare Constraints
-
-- No global state persistence between requests
-- `env` bindings only available in handler context
-- Limited CPU time (10-30ms per request)
-- 128MB memory limit per isolate
-
-## When Making Changes
-
-1. Domain types go in `@repo/domain`
-2. API definitions go in `@repo/api`
-3. Implementations stay in this app
-4. Use `yield* DatabaseService` for DB access
-5. Use `yield* CloudflareBindings` for env/ctx access
+- Domain types/errors → `@repo/domain`; API surface → `@repo/contracts`; DB → `@repo/db`.
+- No type casting. Avoid explicit `Effect` return-type annotations — let them infer.

@@ -5,6 +5,6 @@
  *
  * @module
  */
-export { Bindings } from "@/services/cloudflare"
+export { hyperdrive } from "@/services/cloudflare"
 
 export { DatabaseMiddlewareLive, MiddlewareLive } from "@/services/middleware"

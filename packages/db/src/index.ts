@@ -15,12 +15,7 @@ export { users, type User as DbUser, type NewUser } from "./schema"
 // Query exports
 export * from "./queries"
 
-// PgDrizzle service and layers
-export {
-  PgDrizzle,
-  PgDrizzleLive,
-  PgDrizzleLiveWithConfig,
-  makePgDrizzleLayer,
-  makeDrizzle,
-  makeRemoteCallback
-} from "./pg-drizzle/index.js"
+// Database service tag + request-scoped connection factory
+// (first-class drizzle-orm/effect-postgres client)
+export { Database } from "./database.js"
+export { connect } from "./connect.js"

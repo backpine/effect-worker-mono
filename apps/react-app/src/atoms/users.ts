@@ -13,7 +13,7 @@ export const usersAtom = rpcRuntime.atom(
   ),
 )
 
-export const userAtom = Atom.family((id: string) =>
+export const userAtom = Atom.family((id: number) =>
   Atom.make((get) => {
     const result = get(usersAtom)
     return AsyncResult.map(result, (data) =>

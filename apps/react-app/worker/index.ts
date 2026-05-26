@@ -26,6 +26,7 @@ import {
 import { RpcServer, RpcSerialization } from "effect/unstable/rpc"
 import { UsersRpc } from "@repo/contracts/rpc"
 import { UsersHandlers } from "./users"
+import { DatabaseRpcMiddlewareLive } from "./middleware"
 
 /**
  * The RPC fetch handler, exactly as the Alchemy guide composes it: the RPC group
@@ -36,6 +37,7 @@ import { UsersHandlers } from "./users"
 const rpcApp = RpcServer.toHttpEffect(UsersRpc).pipe(
   Effect.flatten,
   Effect.provide(UsersHandlers),
+  Effect.provide(DatabaseRpcMiddlewareLive),
   Effect.provide(RpcSerialization.layerJson),
 )
 

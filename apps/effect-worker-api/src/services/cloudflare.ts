@@ -1,20 +1,13 @@
 /**
- * Cloudflare Bindings Service
+ * Effectful Cloudflare bindings for this worker.
  *
- * A typed, non-nullable service holding the current request's Cloudflare `env`
- * and `ExecutionContext`. It is provided once per request at the worker entry
- * point (`index.ts`), so handlers and middleware read `env`/`ctx` directly —
- * no nullable `Context.Reference` bridge, no null checks, and no casting (the
- * `env` is the worker's generated `Env` type).
+ * Instantiates `@repo/cloudflare` with this project's typegen'd `Env` and the
+ * `cloudflare:workers` `env`. Bindings become yieldable and type-safe (selectors
+ * are checked against `Env`) — e.g. `yield* hyperdrive(e => e.HYPERDRIVE)`.
  *
  * @module
  */
-import { Context } from "effect"
+import { env } from "cloudflare:workers"
+import { makeCloudflare } from "@repo/cloudflare"
 
-export class Bindings extends Context.Service<
-  Bindings,
-  {
-    readonly env: Env
-    readonly ctx: ExecutionContext
-  }
->()("@app/api/Bindings") {}
+export const { hyperdrive } = makeCloudflare<Env>(() => env)

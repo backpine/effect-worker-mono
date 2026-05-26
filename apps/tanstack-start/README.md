@@ -191,7 +191,7 @@ The `effectRuntimeMiddleware` creates a per-request Effect runtime that provides
 // src/server/middleware/effect-runtime.ts
 export const effectRuntimeMiddleware = createMiddleware().server(
   async ({ next }) => {
-    // Define service layers (add PgDrizzle, custom services, etc.)
+    // Define service layers (add Database, custom services, etc.)
     const servicesLayer = Layer.empty
 
     return Effect.runPromise(
@@ -230,7 +230,7 @@ export const greetingFunction = effectFunction
         yield* Effect.log(`Processing: ${data.name}`)
 
         // Access services via yield*
-        // const db = yield* PgDrizzle
+        // const db = yield* Database
 
         return {
           message: `Hello, ${data.name}!`,
@@ -243,31 +243,31 @@ export const greetingFunction = effectFunction
 
 ### Adding Services (e.g., Database)
 
-To add services like `PgDrizzle` from `@repo/cloudflare`:
+To add the `Database` service from `@repo/db`:
 
 1. **Update the middleware** (`src/server/middleware/effect-runtime.ts`):
 ```typescript
-import { PgDrizzle, makeDrizzle } from "@repo/cloudflare"
+import { Database, connect } from "@repo/db"
 
 const dbLayer = Layer.scoped(
-  PgDrizzle,
-  makeDrizzle(env.HYPERDRIVE.connectionString)
+  Database,
+  connect(env.HYPERDRIVE.connectionString)
 )
 const servicesLayer = Layer.mergeAll(dbLayer)
 ```
 
 2. **Update the types** (`src/server/types.ts`):
 ```typescript
-import type { PgDrizzle } from "@repo/cloudflare"
+import type { Database } from "@repo/db"
 
-export type EffectServices = PgDrizzle // Add more services with |
+export type EffectServices = Database // Add more services with |
 ```
 
 3. **Use in handlers**:
 ```typescript
 return context.runEffect(
   Effect.gen(function* () {
-    const db = yield* PgDrizzle
+    const db = yield* Database
     return yield* db.select().from(users)
   })
 )

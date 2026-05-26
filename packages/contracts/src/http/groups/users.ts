@@ -1,20 +1,29 @@
 /**
  * Users Endpoint Definition
  *
- * Contains only the endpoint schema definitions, no handler implementation.
- * This separation allows sharing API contracts without implementation coupling.
+ * Endpoint schemas only — no handler implementation. The success shape mirrors
+ * the database row returned by `@repo/db` queries directly (no domain mapping),
+ * so handlers can return query results as-is.
  *
  * @module
  */
 import { HttpApiEndpoint, HttpApiGroup } from "effect/unstable/httpapi"
 import { Schema as S } from "effect"
-import {
-  UserSchema,
-  UserIdPathSchema,
-  CreateUserSchema
-} from "@repo/domain"
+import { CreateUserSchema } from "@repo/domain"
 import { UserCreationError, UserNotFoundError } from "@repo/domain"
 import { DatabaseMiddleware } from "../middleware"
+
+/**
+ * User response schema — matches the `users` table row from `@repo/db`.
+ * `createdAt` is a `Date` on the server and an ISO string on the wire.
+ */
+export const UserSchema = S.Struct({
+  id: S.Number,
+  email: S.String,
+  name: S.String,
+  createdAt: S.DateFromString
+})
+export type User = typeof UserSchema.Type
 
 /**
  * Users list response schema.
@@ -34,7 +43,7 @@ export const UsersGroup = HttpApiGroup.make("users")
   .add(HttpApiEndpoint.get("list", "/", { success: UsersListSchema }))
   .add(
     HttpApiEndpoint.get("get", "/:id", {
-      params: { id: UserIdPathSchema.fields.id },
+      params: { id: S.NumberFromString },
       success: UserSchema,
       error: UserNotFoundError
     })

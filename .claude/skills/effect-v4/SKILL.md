@@ -69,5 +69,5 @@ All under `repos/effect/packages/effect/src/`. Module name maps 1:1 to the impor
 - **`SqlError`** wraps a structured reason:
   `new SqlError.SqlError({ reason: new SqlError.UnknownError({ cause }) })` (the `cause`
   field is now derived, not a constructor arg).
-- Service keys are yieldable directly: `const db = yield* PgDrizzle` (no `FiberRef.get`).
+- Service keys are yieldable directly: `const db = yield* Database` (no `FiberRef.get`).
 - See `CLAUDE.md` → "Effect v4 — Vendored Source Reference" for the project-level summary.

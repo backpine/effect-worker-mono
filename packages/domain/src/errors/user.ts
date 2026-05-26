@@ -6,7 +6,6 @@
  * @module
  */
 import { Schema as S } from "effect"
-import { UserIdSchema } from "../schemas/user"
 
 /**
  * Error returned when a user creation fails.
@@ -30,7 +29,7 @@ export class UserCreationError extends S.TaggedErrorClass<UserCreationError>()(
 export class UserNotFoundError extends S.TaggedErrorClass<UserNotFoundError>()(
   "UserNotFoundError",
   {
-    id: UserIdSchema,
+    id: S.Number,
     message: S.String
   },
   { httpApiStatus: 404 }

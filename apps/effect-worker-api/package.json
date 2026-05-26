@@ -13,10 +13,10 @@
     "build": "tsc && wrangler deploy --dry-run"
   },
   "dependencies": {
+    "@repo/cloudflare": "workspace:^",
     "@repo/contracts": "workspace:^",
     "@repo/db": "workspace:^",
     "@repo/domain": "workspace:^",
-    "drizzle-orm": "^0.45.0",
     "effect": "catalog:"
   },
   "devDependencies": {

@@ -72,34 +72,29 @@ This is a Cloudflare Workers monorepo using Effect-TS. Apps import from shared p
 ### Package Dependency Flow
 
 ```
-@repo/domain (types, schemas, errors)
-       ↓
-@repo/db (Drizzle schema + Effect query programs)
-       ↓
-@repo/cloudflare (FiberRef bridge, service tags, database factory)
-       ↓
-@repo/contracts (HTTP/RPC API definitions, middleware tags)
-       ↓
-apps/ (handler implementations, middleware implementations)
+@repo/domain     (types, schemas, errors)
+@repo/db         (Drizzle schema, query programs, Database tag)   ── depends on domain
+@repo/cloudflare (effectful, type-safe Cloudflare bindings)       ── standalone
+@repo/contracts  (HTTP/RPC API definitions + middleware tags)     ── depends on domain, db
+apps/            (handler + request-scoped middleware impls)      ── depend on the above
 ```
 
 ### Key Patterns
 
-**FiberRef Bridge**: Cloudflare's `env` and `ctx` are request-scoped. The pattern stores them in FiberRefs at request entry, then middleware reads them to provide services:
+**Effectful bindings** (`@repo/cloudflare`): `makeCloudflare<Env>(() => env)` exposes `CloudflareEnv` (a `Context.Reference` defaulting to the `cloudflare:workers` `env`) plus cast-free selector accessors. Bindings become yieldable and error-typed:
 
 ```typescript
-// Entry point
-const effect = handleRequest(request).pipe(withCloudflareBindings(env, ctx))
-return runtime.runPromise(effect)
-
-// Middleware reads FiberRef → provides service
-const env = yield* FiberRef.get(currentEnv)
-return { env, ctx }
+const bucket = yield* r2((e) => e.BUCKET)        // effectful R2 client
+const { connectionString } = yield* hyperdrive((e) => e.HYPERDRIVE)
 ```
+
+**Request-scoped database via middleware**: on Cloudflare the DB connection must open **per request**, never at module load (Hyperdrive only allows sockets inside a `fetch`). The `Database` service is *provided by middleware* that opens a connection in the request `Scope`. The middleware's `provides` type-subtracts `Database` from handlers' requirements — so a DB-using group/RPC missing its `.middleware(...)` is a **compile error**. Same pattern for HTTP (`HttpApiMiddleware`) and RPC (`RpcMiddleware`).
+
+**Entry shape** (Alchemy-v2-style): the API/RPC group becomes an `HttpEffect` (`HttpRouter.toHttpEffect` / `RpcServer.toHttpEffect`), run per request with `HttpServerRequest.fromWeb(req)` provided, in a fresh `Effect.scoped`.
 
 **Contract/Implementation Split**: `@repo/contracts` defines abstract middleware tags; apps provide concrete implementations via Layers.
 
-**Query Programs**: Database queries live in `@repo/db/src/queries/` as Effect programs requiring `PgDrizzle`. Handlers call these instead of inline queries.
+**Query Programs**: Database queries live in `@repo/db/src/queries/` as Effect programs requiring the `Database` tag. Handlers call these instead of inline queries.
 
 ### Import Conventions
 
