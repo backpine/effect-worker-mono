@@ -1,19 +1,13 @@
 import { Config, Effect, Option, Schema } from "effect"
 import { HttpClient, type HttpClientRequest } from "effect/http"
 import { HttpApiClient } from "effect/http-api"
-import { WorkerApi } from "@repo/contracts/api"
+import { ApiOriginSchema, WorkerApi } from "@repo/contracts/api"
 import { CliFailure } from "../errors"
-
-const ApiOrigin = Schema.URLFromString.check(Schema.makeFilter((url) =>
-  ((url.protocol === "http:" || url.protocol === "https:") &&
-    url.pathname === "/" && !url.username && !url.password && !url.search && !url.hash) ||
-  "Expected an HTTP(S) origin such as http://localhost:8787",
-))
 
 const resolveOrigin = (flag: Option.Option<string>) => {
   const origin: Effect.Effect<URL, Schema.SchemaError | Config.ConfigError> = Option.isSome(flag)
-    ? Schema.decodeUnknownEffect(ApiOrigin)(flag.value)
-    : Config.schema(ApiOrigin, "API_URL")
+    ? Schema.decodeUnknownEffect(ApiOriginSchema)(flag.value)
+    : Config.schema(ApiOriginSchema, "API_URL")
   // Use a fixed diagnostic because a rejected URL can contain credentials.
   return origin.pipe(Effect.mapError(() => new CliFailure({
     exitCode: 2,

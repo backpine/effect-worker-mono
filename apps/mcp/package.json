@@ -1,0 +1,24 @@
+{
+  "name": "mcp",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev --ip 127.0.0.1 --port 8788 --var LOCAL_USER_TOOLS:true",
+    "deploy": "wrangler deploy",
+    "cf-typegen": "wrangler types --env-interface Env --include-runtime false --strict-vars false",
+    "build": "bun run check && wrangler deploy --dry-run",
+    "check": "bun --bun tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@repo/cloudflare": "workspace:^",
+    "@repo/contracts": "workspace:^",
+    "@repo/domain": "workspace:^",
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "wrangler": "4.56.0"
+  }
+}

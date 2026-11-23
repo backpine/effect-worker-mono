@@ -7,3 +7,4 @@
  */
 export { WorkerApi } from "./api"
 export * from "./groups"
+export { ApiOriginSchema } from "./origin"

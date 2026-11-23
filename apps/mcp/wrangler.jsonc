@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2024-11-27",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "API_URL": "http://127.0.0.1:8787",
+    "LOCAL_USER_TOOLS": "false"
+  }
+}

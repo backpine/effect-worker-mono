@@ -114,6 +114,11 @@ Bun CLI for API health and user management. Commands validate arguments with
 the domain schemas and call the API through the shared HTTP contract.
 See the [CLI guide](apps/cli/README.md) for commands and tests.
 
+### `mcp`
+
+Standalone MCP Worker with schema-validated tools backed by the shared HTTP
+contract. See the [MCP guide](apps/mcp/README.md) for local setup and tests.
+
 ### `react-app`
 The React SPA and Effect RPC Worker share one origin. `worker/index.ts` selects
 the live database layer and `worker/runtime.ts` builds the router and RPC
