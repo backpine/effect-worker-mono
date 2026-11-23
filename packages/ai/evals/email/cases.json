@@ -1,0 +1,32 @@
+{
+  "version": "v1",
+  "cases": [
+    {
+      "id": "welcome-meeting",
+      "input": {
+        "recipient": "Sam",
+        "purpose": "Confirm the welcome meeting",
+        "facts": ["The meeting is Tuesday at 10 AM.", "The meeting will take place in Room 4."]
+      },
+      "expectedSubjectText": "welcome"
+    },
+    {
+      "id": "report-reminder",
+      "input": {
+        "recipient": "Alex",
+        "purpose": "Send a reminder about the monthly report",
+        "facts": ["The report is due on Friday."]
+      },
+      "expectedSubjectText": "report"
+    },
+    {
+      "id": "reschedule-demo",
+      "input": {
+        "recipient": "Priya",
+        "purpose": "Share the new demo time",
+        "facts": ["The demo moved from 2 PM to 3 PM.", "The meeting link stays the same."]
+      },
+      "expectedSubjectText": "demo"
+    }
+  ]
+}

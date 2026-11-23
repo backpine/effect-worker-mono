@@ -1,0 +1,27 @@
+{
+  "name": "@repo/ai",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "bun --bun tsc -p tsconfig.build.json",
+    "check": "bun --bun tsc --noEmit",
+    "clean": "rm -rf dist",
+    "test": "bun test",
+    "example": "bun examples/draft-email.ts",
+    "eval": "bun evals/run.ts"
+  },
+  "dependencies": {
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@effect/ai-openai": "catalog:",
+    "@effect/platform-bun": "catalog:"
+  }
+}

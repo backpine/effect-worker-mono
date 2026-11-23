@@ -40,6 +40,12 @@ bun run dev    # Start dev server
 
 All packages use the `@repo/*` namespace for internal monorepo imports.
 
+### `@repo/ai`
+
+Schema-validated AI operations with versioned Effect prompt layers. See the
+[AI package guide](packages/ai/README.md) for a runnable email example, tests,
+and local prompt evals.
+
 ### `@repo/domain`
 Core domain schemas and errors (Effect Schema).
 
