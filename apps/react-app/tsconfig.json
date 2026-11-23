@@ -14,11 +14,15 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "jsx": "react-jsx",
-    "types": ["vite/client", "@cloudflare/workers-types"],
+    "types": ["vite/client", "@cloudflare/workers-types", "bun"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@repo/cloudflare": ["../../packages/cloudflare/src/index.ts"],
+      "@repo/contracts/*": ["../../packages/contracts/src/*"],
+      "@repo/db/*": ["../../packages/db/src/*"],
+      "@repo/domain": ["../../packages/domain/src/index.ts"]
     }
   },
-  "include": ["src", "worker", "worker-configuration.d.ts"]
+  "include": ["src", "worker", "test", "worker-configuration.d.ts"]
 }

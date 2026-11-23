@@ -1,0 +1,24 @@
+{
+  "name": "@repo/ui",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./button": "./src/button.tsx",
+    "./text-field": "./src/text-field.tsx",
+    "./theme.css": "./src/theme.css"
+  },
+  "scripts": {
+    "check": "bun --bun tsc --noEmit"
+  },
+  "dependencies": {
+    "@ui-sdk/core": "catalog:",
+    "@ui-sdk/react": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:"
+  }
+}

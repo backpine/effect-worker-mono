@@ -1,9 +1,10 @@
-import { Suspense, useState } from "react"
+import { Suspense, useRef, useState, type FormEvent } from "react"
 import { createFileRoute } from "@tanstack/react-router"
 import { useAtomValue, useAtomSet } from "@effect/atom-react"
 import { Cause } from "effect"
-import { Button } from "@/components/ui/button"
-import { usersAtom, createUserFn } from "@/atoms"
+import { Button } from "@repo/ui/button"
+import { TextField } from "@repo/ui/text-field"
+import { usersAtom, createUserFn, usersKeys } from "@/atoms"
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -12,12 +13,7 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   return (
     <div className="mx-auto max-w-2xl space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">Users</h1>
-        <p className="text-muted-foreground">
-          Manage users via Effect RPC + Atom
-        </p>
-      </div>
+      <h1 className="text-3xl font-bold">Users</h1>
       <CreateUserForm />
       <Suspense fallback={<p className="text-muted-foreground">Loading users...</p>}>
         <UsersList />
@@ -29,48 +25,58 @@ function HomePage() {
 function CreateUserForm() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
+  const submitting = useRef(false)
   const result = useAtomValue(createUserFn)
   const submit = useAtomSet(createUserFn, { mode: "promise" })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name.trim() || !email.trim()) return
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const payload = { name: name.trim(), email: email.trim() }
+    if (submitting.current || !payload.name || !payload.email) return
+    submitting.current = true
     try {
-      await submit({ name: name.trim(), email: email.trim() })
+      await submit({ payload, reactivityKeys: usersKeys })
       setName("")
       setEmail("")
     } catch {
       // Error state is tracked in the atom
+    } finally {
+      submitting.current = false
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-border p-4">
-      <h2 className="text-lg font-semibold">Create User</h2>
+    <form
+      onSubmit={handleSubmit}
+      aria-labelledby="create-user"
+      className="space-y-4 rounded-lg border border-border bg-surface p-4"
+    >
+      <h2 id="create-user" className="text-lg font-semibold">Create User</h2>
       <div className="grid gap-4 sm:grid-cols-2">
-        <input
-          type="text"
-          placeholder="Name"
+        <TextField
+          name="name"
+          label="Name"
+          autoComplete="name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          onValueChange={setName}
           required
         />
-        <input
+        <TextField
+          name="email"
+          label="Email"
           type="email"
-          placeholder="Email"
+          autoComplete="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          onValueChange={setEmail}
           required
         />
       </div>
       {result._tag === "Failure" && (
-        <p className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-destructive">
           {Cause.pretty(result.cause)}
         </p>
       )}
-      <Button type="submit" disabled={result.waiting}>
+      <Button type="submit" busy={result.waiting}>
         {result.waiting ? "Creating..." : "Create User"}
       </Button>
     </form>
@@ -105,7 +111,7 @@ function UsersList() {
       <h2 className="text-lg font-semibold">
         All Users <span className="text-muted-foreground font-normal">({total})</span>
       </h2>
-      <div className="divide-y divide-border rounded-lg border border-border">
+      <div className="divide-y divide-border rounded-lg border border-border bg-surface">
         {users.map((user) => (
           <div key={user.id} className="flex items-center justify-between px-4 py-3">
             <div>

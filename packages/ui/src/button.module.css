@@ -1,0 +1,35 @@
+@layer components {
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: 2.75rem;
+    border: 1px solid transparent;
+    border-radius: var(--repo-ui-control-radius);
+    background: var(--repo-ui-primary);
+    color: var(--repo-ui-on-primary);
+    padding-inline: 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .button:not([data-disabled]):hover {
+    background: var(--repo-ui-primary-hover);
+  }
+
+  .button:focus-visible {
+    outline: 2px solid var(--repo-ui-focus);
+    outline-offset: 3px;
+  }
+
+  .button[data-disabled] {
+    background: var(--repo-ui-muted);
+    color: var(--repo-ui-muted-foreground);
+    cursor: not-allowed;
+  }
+
+  .button[aria-busy="true"] {
+    cursor: progress;
+  }
+}

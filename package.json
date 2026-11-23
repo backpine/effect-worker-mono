@@ -10,6 +10,9 @@
     "catalog": {
       "@effect/atom-react": "4.1.5",
       "@effect/sql-pg": "4.1.5",
+      "@types/react": "~19.2.10",
+      "@ui-sdk/core": "0.1.0-beta.16",
+      "@ui-sdk/react": "0.1.0-beta.16",
       "effect": "4.1.5"
     }
   },
@@ -27,8 +30,5 @@
     "effect": "catalog:",
     "pkg-pr-new": "0.0.94",
     "typescript": "^5.6.3"
-  },
-  "patchedDependencies": {
-    "effect@4.1.5": "patches/effect@4.1.5.patch"
   }
 }

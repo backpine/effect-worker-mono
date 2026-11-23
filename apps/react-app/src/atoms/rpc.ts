@@ -1,12 +1,12 @@
 import { Layer } from "effect"
-import { FetchHttpClient } from "effect/unstable/http"
-import { RpcClient, RpcSerialization } from "effect/unstable/rpc"
-import * as Atom from "effect/unstable/reactivity/Atom"
+import { FetchHttpClient } from "effect/http"
+import { AtomRpc } from "effect/reactivity"
+import { RpcClient, RpcSerialization } from "effect/rpc"
+import { UsersRpc } from "@repo/contracts/rpc"
 
-const RpcLayer = RpcClient.layerProtocolHttp({ url: "/rpc" }).pipe(
-  // JSON serialization (unary calls) — must match the worker's RpcSerialization.
-  Layer.provide(RpcSerialization.layerJson),
-  Layer.provide(FetchHttpClient.layer),
-)
-
-export const rpcRuntime = Atom.runtime(RpcLayer)
+export class UsersClient extends AtomRpc.Service<UsersClient>()("@repo/react-app/UsersClient", {
+  group: UsersRpc,
+  protocol: RpcClient.layerProtocolHttp({ url: "/rpc" }).pipe(
+    Layer.provide([RpcSerialization.layerJson, FetchHttpClient.layer]),
+  ),
+}) {}

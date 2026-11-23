@@ -109,20 +109,26 @@ bun run deploy     # Deploy to Cloudflare
 - `GET /api/openapi.json` - OpenAPI document
 
 ### `react-app`
-React SPA (Vite + TanStack Router) with an Effect RPC server co-located in
-`worker/`. The Cloudflare Vite plugin runs the worker alongside the SPA, so the
-client calls the relative path `/rpc` — one app, one origin, no separate RPC
-service. The worker uses Effect `RpcServer` over the shared `UsersRpc` contract
-and the SPA queries it through `@effect/atom-react` (see `src/atoms/`).
+The React SPA and Effect RPC Worker share one origin. `worker/index.ts` selects
+the live database layer and `worker/runtime.ts` builds the router and RPC
+server once per isolate. Each decoded user procedure opens its own scoped
+connection and runs a query from `@repo/db/queries`. React calls the shared
+`UsersRpc` contract at `/rpc` through the typed client in `src/atoms/`.
 
 ```bash
 cd apps/react-app
 bun run dev        # SPA + RPC worker on one dev server (port 3001)
+bun test           # RPC routing and database scope tests
 bun run deploy     # Build + deploy to Cloudflare
 ```
 
-**Endpoints:**
-- `POST /rpc` - Effect RPC endpoint (UsersRpc: listUsers / getUser / createUser)
+Use the [local Postgres setup](packages/db/README.md#change-the-schema) to run
+the SPA with Hyperdrive. Both `POST /rpc` and `POST /rpc/` serve `UsersRpc`.
+
+Reusable React controls and design tokens live in `packages/ui`. Import
+`Button` from `@repo/ui/button` and labeled inputs from `@repo/ui/text-field`.
+The app loads the UI SDK stylesheet and the shared theme in `src/styles.css`.
+See [AGENTS.md](AGENTS.md) for the version-matched UI SDK docs.
 
 ## Core Patterns
 

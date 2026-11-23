@@ -1,0 +1,29 @@
+:root {
+  --repo-ui-background: light-dark(#f2f6f6, #101b1e);
+  --repo-ui-surface: light-dark(#fff, #17262a);
+  --repo-ui-foreground: light-dark(#17282d, #e8f2f1);
+  --repo-ui-muted: light-dark(#e3ecec, #263a3d);
+  --repo-ui-muted-foreground: light-dark(#485e63, #aec5c5);
+  --repo-ui-border: light-dark(#cad7d8, #374f53);
+  --repo-ui-control-border: light-dark(#788d90, #819d9f);
+  --repo-ui-primary: light-dark(#155e63, #86dfd6);
+  --repo-ui-primary-hover: light-dark(#10494d, #a5efe7);
+  --repo-ui-on-primary: light-dark(#fff, #092b2b);
+  --repo-ui-focus: light-dark(#08767e, #72e6df);
+  --repo-ui-danger: light-dark(#a1273d, #ff9bab);
+  --repo-ui-control-radius: 0.5rem;
+  --repo-ui-surface-radius: 0.75rem;
+
+  --ui-background: var(--repo-ui-surface);
+  --ui-foreground: var(--repo-ui-foreground);
+  --ui-muted: var(--repo-ui-muted);
+  --ui-muted-foreground: var(--repo-ui-muted-foreground);
+  --ui-border: var(--repo-ui-border);
+  --ui-input: var(--repo-ui-control-border);
+  --ui-primary: var(--repo-ui-primary);
+  --ui-primary-foreground: var(--repo-ui-on-primary);
+  --ui-destructive: var(--repo-ui-danger);
+  --ui-ring: var(--repo-ui-focus);
+  --ui-ring-border: var(--repo-ui-focus);
+  --ui-radius: var(--repo-ui-control-radius);
+}

@@ -31,7 +31,6 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@repo/db": "workspace:^",
     "@repo/domain": "workspace:^",
     "effect": "catalog:"
   }

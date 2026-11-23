@@ -9,9 +9,6 @@ the Cloudflare dev servers use Node.js.
 Check the installed declarations and source in `node_modules/effect` for the
 exact version in use. The older snapshot in `repos/effect` is historical.
 
-The Effect package patch maps the React app's existing import paths to the
-stable exports. Remove those aliases when the React app migrates its imports.
-
 ## Commands
 
 ```bash
@@ -44,7 +41,7 @@ This is a Cloudflare Workers monorepo using Effect-TS. Apps import from shared p
 @repo/domain     (types, schemas, errors)
 @repo/db         (Drizzle schema, query programs, Database tag)   ── depends on domain
 @repo/cloudflare (Effect Worker adapter and typed bindings)      ── standalone
-@repo/contracts  (HTTP/RPC API definitions + middleware tags)     ── depends on domain, db
+@repo/contracts  (HTTP/RPC API definitions)                       ── depends on domain
 apps/            (composition roots, handlers and live layers)   ── depend on the above
 ```
 
@@ -57,11 +54,11 @@ const bucket = yield* r2((e) => e.BUCKET)        // effectful R2 client
 const { connectionString } = yield* hyperdrive((e) => e.HYPERDRIVE)
 ```
 
-**REST Worker** (`apps/api`): `Worker.make` builds the router and
-group layers once per isolate and supplies a fresh request scope. The composition
-root passes the database layer to the users group. The users handlers build
-it per request after decoding, and the request owns the connection. RPC in
-`react-app` uses its existing database middleware.
+**Worker composition**: `apps/api/src/index.ts` and `apps/react-app/worker/index.ts`
+select the live layers. `Worker.make` builds the router and handler layers
+once per isolate and supplies a fresh request scope. REST handlers and RPC
+procedures acquire their own database connection after decoding the input.
+Each call in an RPC batch owns its connection.
 
 **Query Programs**: Put parameterized Effect SQL in `packages/db/src/queries/`. Handlers import the programs from `@repo/db/queries` and supply the request's `Database` service. The [DB package guide](packages/db/README.md) covers schema updates and test fixtures.
 
@@ -92,6 +89,5 @@ CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="postgres://postgres:po
 | Reusable queries | `@repo/db/src/queries/` |
 | HTTP endpoint definitions | `@repo/contracts/src/api/groups/` |
 | RPC procedure definitions | `@repo/contracts/src/rpc/procedures/` |
-| Middleware tags | `@repo/contracts/src/*/middleware/` |
-| Handler implementations | `apps/*/src/handlers/` |
-| REST database layer | `apps/api/src/services/database.ts` |
+| REST handlers and services | `apps/api/src/{handlers,services}/` |
+| RPC handlers and services | `apps/react-app/worker/{handlers,services}/` |
