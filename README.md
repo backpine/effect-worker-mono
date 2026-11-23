@@ -20,10 +20,10 @@ pnpm dev              # Start dev server
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Applications                              │
-│  ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐│
-│  │effect-worker-api │ │     react-app    │ │  tanstack-start  ││
-│  │   (HTTP REST)    │ │(SPA + RPC Worker)│ │  (Full-Stack UI) ││
-│  └──────────────────┘ └──────────────────┘ └──────────────────┘│
+│  ┌──────────────────┐ ┌──────────────────┐                     │
+│  │effect-worker-api │ │     react-app    │                     │
+│  │   (HTTP REST)    │ │(SPA + RPC Worker)│                     │
+│  └──────────────────┘ └──────────────────┘                     │
 ├─────────────────────────────────────────────────────────────────┤
 │                     Shared Packages                              │
 │  ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌──────────────┐    │
@@ -121,56 +121,6 @@ pnpm deploy     # Build + deploy to Cloudflare
 **Endpoints:**
 - `POST /rpc` - Effect RPC endpoint (UsersRpc: listUsers / getUser / createUser)
 
-### `tanstack-start`
-Full-stack React application with TanStack Start, featuring Effect-TS integration via middleware.
-
-```bash
-cd apps/tanstack-start
-pnpm dev        # Local dev server (port 3000)
-pnpm deploy     # Deploy to Cloudflare
-```
-
-**Features:**
-- TanStack Router (file-based routing)
-- TanStack Query (server state management)
-- Effect runtime middleware for server functions
-- Tailwind CSS v4 + Shadcn/UI components
-
-**Effect Integration Pattern:**
-```typescript
-// Middleware creates scoped Effect runtime per-request
-export const effectRuntimeMiddleware = createMiddleware().server(
-  async ({ next }) => {
-    const servicesLayer = Layer.mergeAll(/* your services */)
-    return Effect.runPromise(
-      Effect.scoped(
-        Effect.gen(function* () {
-          const runtime = yield* Layer.toRuntime(servicesLayer)
-          const runEffect = <A, E>(effect: Effect.Effect<A, E, Services>) =>
-            Runtime.runPromise(runtime)(effect)
-          return yield* Effect.tryPromise({
-            try: () => next({ context: { env, runEffect } }),
-            catch: (e) => { throw e }
-          })
-        })
-      )
-    )
-  }
-)
-
-// Server functions use runEffect to execute Effect programs
-export const myFunction = createServerFn()
-  .middleware([effectRuntimeMiddleware])
-  .handler(async ({ context }) => {
-    return context.runEffect(
-      Effect.gen(function* () {
-        const db = yield* Database
-        return yield* db.select().from(users)
-      })
-    )
-  })
-```
-
 ## Core Patterns
 
 ### Effectful bindings
@@ -257,18 +207,9 @@ effect-worker-mono/
 │   │   │   ├── handlers/      # Handler implementations
 │   │   │   └── services/      # Middleware implementations
 │   │   └── wrangler.jsonc     # Cloudflare config
-│   ├── react-app/             # React SPA + co-located Effect RPC worker
-│   │   ├── src/               # SPA (atoms call /rpc via @effect/atom-react)
-│   │   └── worker/            # Effect RpcServer (UsersRpc) served at /rpc
-│   └── tanstack-start/        # Full-stack React app
-│       ├── src/
-│       │   ├── routes/        # File-based routes
-│       │   ├── components/    # React components
-│       │   └── server/        # Server-side code
-│       │       ├── middleware/  # Effect runtime middleware
-│       │       ├── functions/   # Server functions
-│       │       └── types.ts     # Effect service types
-│       └── wrangler.jsonc     # Cloudflare config
+│   └── react-app/             # React SPA + co-located Effect RPC worker
+│       ├── src/               # SPA (atoms call /rpc via @effect/atom-react)
+│       └── worker/            # Effect RpcServer (UsersRpc) served at /rpc
 ├── packages/
 │   ├── domain/                # Domain types & schemas
 │   │   └── src/
@@ -362,7 +303,7 @@ const db = yield* connect(env.HYPERDRIVE.connectionString)
 | Framework | Effect-TS v4 (`effect@4.0.0-beta.70`) |
 | HTTP | `effect/unstable/httpapi` |
 | RPC | `effect/unstable/rpc` |
-| Full-Stack UI | TanStack Start + TanStack Router + TanStack Query |
+| UI | React + Vite + TanStack Router |
 | Database | Drizzle ORM (`drizzle-orm/effect-postgres`) + PostgreSQL |
 | Build | pnpm workspaces + TypeScript |
 | Testing | Vitest + @effect/vitest |
@@ -374,9 +315,7 @@ const db = yield* connect(env.HYPERDRIVE.connectionString)
 - **@effect/sql-pg** - PostgreSQL client (underlies the Drizzle connection)
 - **@effect/atom-react** - Reactive state for the React SPA
 - **drizzle-orm** (`1.0.0-rc.3`) - Type-safe ORM; `drizzle-orm/effect-postgres` client
-- **@tanstack/react-start** - Full-stack React framework
 - **@tanstack/react-router** - Type-safe file-based routing
-- **@tanstack/react-query** - Server state management
 - **wrangler** - Cloudflare Workers CLI
 
 ## Development Workflow
