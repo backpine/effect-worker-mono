@@ -2,67 +2,36 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Effect v4 — Vendored Source Reference (`repos/effect`)
+## Effect v4
 
-This project runs **Effect v4 (`4.0.0-beta.70`)**, a fast-moving beta whose public
-docs lag the actual APIs. The full Effect v4 source is vendored at **`repos/effect`**
-(a `git subtree` of **`Effect-TS/effect-smol`** — the v4 dev repo — pinned to the
-`effect@4.0.0-beta.70` tag, so it exactly matches the version we compile against)
-specifically so you can read real implementations instead of guessing or relying on
-outdated web docs. Note: v4 lives in `effect-smol`, NOT `Effect-TS/effect` (that repo
-is still v3).
+The root `package.json` pins Bun 1.4.5 and Effect 4.1.5. Wrangler and
+the Cloudflare dev servers use Node.js.
+Check the installed declarations and source in `node_modules/effect` for the
+exact version in use. The older snapshot in `repos/effect` is historical.
 
-**Use it as your primary reference for Effect v4 questions:**
-
-- Resolving an API: read the source/types under `repos/effect/packages/effect/src/`.
-  Module names map 1:1 to imports — `Context` → `repos/effect/packages/effect/src/Context.ts`,
-  `Effect` → `Effect.ts`, etc. Unstable APIs live under `src/unstable/` (e.g.
-  `src/unstable/rpc/`, `src/unstable/http/`, `src/unstable/httpapi/`, `src/unstable/sql/`,
-  `src/unstable/reactivity/`).
-- Verifying a signature, error shape, or option before using it — grep the source
-  rather than assuming v3 patterns hold.
-- Finding idiomatic usage — search `**/*.test.ts` and `examples/` inside `repos/effect`.
-
-**Rules:**
-
-- `repos/effect` is **read-only reference material**. Never edit it, import from it,
-  or include it in app/package code — apps depend on the published `effect` package
-  via the `pnpm-workspace.yaml` catalog, not on the vendored tree.
-- It is intentionally excluded from search, auto-imports, and file watching (see
-  `.vscode/settings.json`) and from the pnpm/tsc/vitest workspaces.
-- Keep it current with the `git subtree pull` command in the Commands section.
-
-**v4 gotchas already encountered** (the source is the source of truth if these drift):
-the `ServiceMap` module was renamed back to `Context` (`Context.Service`,
-`Context.Reference`, `Context.make`); `SqlError` now wraps a structured reason
-(`new SqlError({ reason: new UnknownError({ cause }) })`).
+The Effect package patch maps the React app's existing import paths to the
+stable exports. Remove those aliases when the React app migrates its imports.
 
 ## Commands
 
 ```bash
 # Root commands
-pnpm install          # Install dependencies
-pnpm build            # Build packages in order: domain → db,cloudflare → contracts
-pnpm check            # Type check all packages/apps (runs per-package)
-pnpm test             # Run all tests with vitest
+bun install          # Install dependencies
+bun run build            # Build packages and apps in dependency order
+bun run check            # Type check all packages/apps (runs per-package)
+bun test             # Run the workspace tests
 
 # App development (run from app directory)
 cd apps/effect-worker-api
-pnpm dev              # Start local dev server with wrangler
-pnpm deploy           # Deploy to Cloudflare
+bun run dev              # Start local dev server with wrangler
+bun run deploy           # Deploy to Cloudflare
 
 # Database operations (run from packages/db)
 cd packages/db
-DATABASE_URL=postgres://... pnpm db:push      # Push schema to database
-DATABASE_URL=postgres://... pnpm db:studio    # Open Drizzle Studio
-DATABASE_URL=postgres://... pnpm db:generate  # Generate migrations
-DATABASE_URL=postgres://... pnpm db:migrate   # Run migrations
-
-# Update the vendored Effect v4 source (repos/effect) when bumping the catalog.
-# Pin to the tag that matches the installed version (e.g. effect@4.0.0-beta.NN),
-# or use `main` for the latest. Source repo is effect-smol (v4), NOT Effect-TS/effect.
-git subtree pull --prefix=repos/effect \
-  https://github.com/Effect-TS/effect-smol.git effect@4.0.0-beta.70 --squash
+DATABASE_URL=postgres://... bun run db:push      # Push schema to database
+DATABASE_URL=postgres://... bun run db:studio    # Open Drizzle Studio
+DATABASE_URL=postgres://... bun run db:generate  # Generate migrations
+DATABASE_URL=postgres://... bun run db:migrate   # Run migrations
 ```
 
 ## Architecture
@@ -74,9 +43,9 @@ This is a Cloudflare Workers monorepo using Effect-TS. Apps import from shared p
 ```
 @repo/domain     (types, schemas, errors)
 @repo/db         (Drizzle schema, query programs, Database tag)   ── depends on domain
-@repo/cloudflare (effectful, type-safe Cloudflare bindings)       ── standalone
+@repo/cloudflare (Effect Worker adapter and typed bindings)      ── standalone
 @repo/contracts  (HTTP/RPC API definitions + middleware tags)     ── depends on domain, db
-apps/            (handler + request-scoped middleware impls)      ── depend on the above
+apps/            (composition roots, handlers and live layers)   ── depend on the above
 ```
 
 ### Key Patterns
@@ -88,11 +57,11 @@ const bucket = yield* r2((e) => e.BUCKET)        // effectful R2 client
 const { connectionString } = yield* hyperdrive((e) => e.HYPERDRIVE)
 ```
 
-**Request-scoped database via middleware**: on Cloudflare the DB connection must open **per request**, never at module load (Hyperdrive only allows sockets inside a `fetch`). The `Database` service is *provided by middleware* that opens a connection in the request `Scope`. The middleware's `provides` type-subtracts `Database` from handlers' requirements — so a DB-using group/RPC missing its `.middleware(...)` is a **compile error**. Same pattern for HTTP (`HttpApiMiddleware`) and RPC (`RpcMiddleware`).
-
-**Entry shape** (Alchemy-v2-style): the API/RPC group becomes an `HttpEffect` (`HttpRouter.toHttpEffect` / `RpcServer.toHttpEffect`), run per request with `HttpServerRequest.fromWeb(req)` provided, in a fresh `Effect.scoped`.
-
-**Contract/Implementation Split**: `@repo/contracts` defines abstract middleware tags; apps provide concrete implementations via Layers.
+**REST Worker** (`apps/effect-worker-api`): `Worker.make` builds the router and
+group layers once per isolate and supplies a fresh request scope. The composition
+root passes the database layer to the users group. The users handlers build
+it per request after decoding, and the request owns the connection. RPC in
+`react-app` uses its existing database middleware.
 
 **Query Programs**: Database queries live in `@repo/db/src/queries/` as Effect programs requiring the `Database` tag. Handlers call these instead of inline queries.
 
@@ -123,4 +92,4 @@ CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="postgres://postgres:po
 | RPC procedure definitions | `@repo/contracts/src/rpc/procedures/` |
 | Middleware tags | `@repo/contracts/src/*/middleware/` |
 | Handler implementations | `apps/*/src/handlers/` |
-| Middleware implementations | `apps/*/src/services/middleware.ts` |
+| REST database layer | `apps/effect-worker-api/src/services/database.ts` |

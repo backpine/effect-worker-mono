@@ -4,9 +4,8 @@
  * API contract definitions for Effect Worker.
  *
  * This package provides shared API contracts for both HTTP and RPC:
- * - HTTP API definitions using effect/unstable/httpapi
- * - RPC procedure definitions using effect/unstable/rpc
- * - Middleware tags for both protocols
+ * - HTTP API definitions using effect/http-api
+ * - RPC procedure definitions and middleware using effect/rpc
  *
  * @module
  */

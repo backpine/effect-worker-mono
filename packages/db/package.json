@@ -17,22 +17,22 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "check": "tsc --noEmit",
-    "test": "vitest",
+    "build": "bun --bun tsc -p tsconfig.build.json",
+    "check": "bun --bun tsc --noEmit",
+    "test": "bun test",
     "clean": "rm -rf dist",
-    "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:push": "bun --bun drizzle-kit push",
+    "db:studio": "bun --bun drizzle-kit studio",
+    "db:generate": "bun --bun drizzle-kit generate",
+    "db:migrate": "bun --bun drizzle-kit migrate"
   },
   "dependencies": {
-    "drizzle-orm": "1.0.0-rc.3",
+    "drizzle-orm": "1.0.0-rc.6",
     "effect": "catalog:",
     "@effect/sql-pg": "catalog:",
     "@repo/domain": "workspace:*"
   },
   "devDependencies": {
-    "drizzle-kit": "1.0.0-rc.3"
+    "drizzle-kit": "1.0.0-rc.6"
   }
 }

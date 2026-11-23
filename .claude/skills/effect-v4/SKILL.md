@@ -54,9 +54,9 @@ All under `repos/effect/packages/effect/src/`. Module name maps 1:1 to the impor
 - `repos/effect` is **read-only reference material**. Never edit it, never import from
   it, never copy its files into `packages/` or `apps/`.
 - App/package code depends on the **published `effect` package** via the
-  `pnpm-workspace.yaml` catalog — not the vendored tree.
+  root `package.json` workspace catalog — not the vendored tree.
 - It's excluded from search/auto-import/watching (`.vscode/settings.json`) and from the
-  pnpm / tsc / vitest workspaces, so it won't interfere with builds.
+  Bun workspace discovery, TypeScript, and Bun test discovery, so it won't interfere with builds.
 - To refresh it:
   `git subtree pull --prefix=repos/effect https://github.com/Effect-TS/effect-smol.git effect@4.0.0-beta.70 --squash`
   (re-pin the tag to whatever version the catalog uses; use `main` for the latest)

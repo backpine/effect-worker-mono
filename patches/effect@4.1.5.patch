@@ -1,0 +1,15 @@
+diff --git a/package.json b/package.json
+--- a/package.json
++++ b/package.json
+@@ -57,6 +57,11 @@
+     "./sql": "./dist/sql/index.js",
+     "./workflow": "./dist/workflow/index.js",
+     "./workers": "./dist/workers/index.js",
++    "./unstable/http": "./dist/http/index.js",
++    "./unstable/reactivity/AsyncResult": "./dist/reactivity/AsyncResult.js",
++    "./unstable/reactivity/Atom": "./dist/reactivity/Atom.js",
++    "./unstable/reactivity/AtomRegistry": "./dist/reactivity/AtomRegistry.js",
++    "./unstable/rpc": "./dist/rpc/index.js",
+     "./*": "./dist/*.js",
+     "./internal/*": null,
+     "./cli/internal/*": null,

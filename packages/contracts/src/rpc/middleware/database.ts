@@ -7,11 +7,11 @@
  *
  * Note: unlike `HttpApiMiddleware`, an `RpcMiddleware` error must be a `Schema`
  * (it is encoded and sent to the client). `DatabaseConnectionError` is a
- * `Schema.TaggedErrorClass`, so it qualifies.
+ * `Schema.TaggedError`, so it qualifies.
  *
  * @module
  */
-import { RpcMiddleware } from "effect/unstable/rpc"
+import { RpcMiddleware } from "effect/rpc"
 import { Database } from "@repo/db/database"
 import { DatabaseConnectionError } from "@repo/domain"
 

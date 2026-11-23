@@ -6,11 +6,11 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
     "cf-typegen": "wrangler types --env-interface Env",
-    "check": "tsc --noEmit",
-    "build": "tsc && wrangler deploy --dry-run"
+    "check": "bun --bun tsc --noEmit",
+    "build": "bun --bun tsc && wrangler deploy --dry-run"
   },
   "dependencies": {
     "@repo/cloudflare": "workspace:^",
@@ -23,7 +23,6 @@
     "@cloudflare/workers-types": "^4.20241127.0",
     "@types/node": "^22.0.0",
     "typescript": "^5.7.0",
-    "vitest": "^2.1.0",
     "wrangler": "^4.55.0"
   }
 }

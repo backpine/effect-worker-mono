@@ -15,8 +15,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         uses: ./.github/actions/setup
-      - name: Build package
-        run: pnpm build
+      - name: Build packages
+        run: bun run --filter '@repo/*' build
       - name: Create snapshot
         id: snapshot
-        run: pnpx pkg-pr-new@0.0.24 publish --pnpm --comment=off ./packages/*
+        run: bun --bun run pkg-pr-new publish --bun --packageManager=bun --comment=off ./packages/*

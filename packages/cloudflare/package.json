@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "license": "MIT",
-  "description": "Effectful, type-safe Cloudflare bindings for Effect Workers",
+  "description": "Effect Worker runtime and typed Cloudflare bindings",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -17,8 +17,8 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "check": "tsc --noEmit",
+    "build": "bun --bun tsc -p tsconfig.build.json",
+    "check": "bun --bun tsc --noEmit",
     "clean": "rm -rf dist"
   },
   "dependencies": {

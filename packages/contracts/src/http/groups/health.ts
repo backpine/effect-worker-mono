@@ -5,7 +5,7 @@
  *
  * @module
  */
-import { HttpApiEndpoint, HttpApiGroup } from "effect/unstable/httpapi"
+import { HttpApiEndpoint, HttpApiGroup } from "effect/http-api"
 import { Schema as S } from "effect"
 
 /**

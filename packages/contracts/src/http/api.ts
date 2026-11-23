@@ -5,17 +5,12 @@
  *
  * @module
  */
-import { HttpApi } from "effect/unstable/httpapi"
+import { HttpApi, HttpApiMiddleware } from "effect/http-api"
 import { HealthGroup, UsersGroup } from "./groups"
 
-/**
- * Worker API definition.
- *
- * All endpoints are prefixed with `/api`. Cloudflare bindings (env/ctx) are
- * provided at the worker entry point as a typed service; the `users` group
- * additionally requires the database via `DatabaseMiddleware`.
- */
+/** All REST endpoints are served under `/api`. */
 export class WorkerApi extends HttpApi.make("WorkerApi")
   .add(HealthGroup)
   .add(UsersGroup)
+  .middleware(HttpApiMiddleware.ProblemDetails)
   .prefix("/api") {}

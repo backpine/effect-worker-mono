@@ -4,7 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "lib": ["ES2022"],
-    "types": ["@cloudflare/workers-types", "node"],
+    "types": ["@cloudflare/workers-types", "node", "bun"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -21,6 +21,7 @@
     "noImplicitReturns": false,
     "paths": {
       "@/*": ["./src/*"],
+      "@repo/cloudflare": ["../../packages/cloudflare/src/index.ts"],
       "@repo/contracts": ["../../packages/contracts/src/index.ts"],
       "@repo/contracts/*": ["../../packages/contracts/src/*"],
       "@repo/db": ["../../packages/db/src/index.ts"],

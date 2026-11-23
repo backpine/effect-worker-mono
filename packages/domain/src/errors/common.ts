@@ -12,7 +12,7 @@ import { Schema as S } from "effect"
  *
  * HTTP Status: 503 Service Unavailable
  */
-export class DatabaseConnectionError extends S.TaggedErrorClass<DatabaseConnectionError>()(
+export class DatabaseConnectionError extends S.TaggedError<DatabaseConnectionError>()(
   "DatabaseConnectionError",
   { message: S.String },
   { httpApiStatus: 503 }

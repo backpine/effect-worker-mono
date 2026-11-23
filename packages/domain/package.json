@@ -17,9 +17,9 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "check": "tsc --noEmit",
-    "test": "vitest",
+    "build": "bun --bun tsc -p tsconfig.build.json",
+    "check": "bun --bun tsc --noEmit",
+    "test": "bun test",
     "clean": "rm -rf dist"
   },
   "dependencies": {

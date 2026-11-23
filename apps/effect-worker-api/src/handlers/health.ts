@@ -1,25 +1,10 @@
-/**
- * Health Handler Implementation
- *
- * @module
- */
-import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { DateTime, Effect } from "effect"
-import { WorkerApi } from "@repo/contracts"
+import { HttpApiBuilder } from "effect/http-api"
+import { WorkerApi } from "@repo/contracts/http"
 
-/**
- * Health endpoint handler implementation.
- */
-export const HealthGroupLive = HttpApiBuilder.group(
-  WorkerApi,
-  "health",
-  (handlers) =>
-    handlers.handle("check", () =>
-      Effect.gen(function* () {
-        return {
-          status: "ok" as const,
-          timestamp: DateTime.nowUnsafe()
-        }
-      })
-    )
+/** Liveness is independent of the database. */
+export const HealthGroupLive = HttpApiBuilder.group(WorkerApi, "health", (handlers) =>
+  handlers.handle("check", () =>
+    Effect.succeed({ status: "ok", timestamp: DateTime.nowUnsafe() })
+  )
 )

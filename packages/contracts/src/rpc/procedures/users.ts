@@ -8,7 +8,7 @@
  *
  * @module
  */
-import { Rpc, RpcGroup } from "effect/unstable/rpc"
+import { Rpc, RpcGroup } from "effect/rpc"
 import { Schema as S } from "effect"
 import { UserNotFoundError, UserCreationError } from "@repo/domain"
 import { DatabaseRpcMiddleware } from "../middleware"

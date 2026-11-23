@@ -20,8 +20,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         uses: ./.github/actions/setup
-      - name: Build packages
-        run: pnpm build
+      - name: Build workspace
+        run: bun run build
   types:
     name: Types
     runs-on: ubuntu-latest
@@ -30,7 +30,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         uses: ./.github/actions/setup
-      - run: pnpm check
+      - run: bun run build
+      - run: bun run check
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -39,6 +40,4 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         uses: ./.github/actions/setup
-      - run: pnpm vitest
-        env:
-          NODE_OPTIONS: --max_old_space_size=8192
+      - run: bun test

@@ -12,7 +12,7 @@ import { Schema as S } from "effect"
  *
  * HTTP Status: 400 Bad Request
  */
-export class UserCreationError extends S.TaggedErrorClass<UserCreationError>()(
+export class UserCreationError extends S.TaggedError<UserCreationError>()(
   "UserCreationError",
   {
     email: S.String,
@@ -26,7 +26,7 @@ export class UserCreationError extends S.TaggedErrorClass<UserCreationError>()(
  *
  * HTTP Status: 404 Not Found
  */
-export class UserNotFoundError extends S.TaggedErrorClass<UserNotFoundError>()(
+export class UserNotFoundError extends S.TaggedError<UserNotFoundError>()(
   "UserNotFoundError",
   {
     id: S.Number,

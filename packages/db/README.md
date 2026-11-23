@@ -16,16 +16,9 @@ Built on the first-class **`drizzle-orm/effect-postgres`** client over `@effect/
 
 ## Connecting (Cloudflare constraint)
 
-On Cloudflare the connection must open **per request**, never at module load (Hyperdrive
-only permits sockets inside a `fetch`). So `connect` requires `Scope` and is called from a
-**request-scoped middleware** (see `@repo/contracts` `DatabaseMiddleware` / `DatabaseRpcMiddleware`
-and the app implementations). Apps never build the DB layer at the root.
-
-```ts
-// inside request-scoped middleware
-const db = yield* connect(env.HYPERDRIVE.connectionString) // Effect<EffectPgDatabase, _, Scope>
-yield* httpEffect.pipe(Effect.provideService(Database, db))
-```
+`connect` opens a connection in the current Effect scope. The REST API builds
+its database layer only while handling a users request. Closing the scope
+releases the connection. RPC callers use the same factory from their middleware.
 
 ## Queries
 
@@ -47,7 +40,7 @@ A Dockerized Postgres lives here for local dev:
 docker compose up -d                 # start postgres (db: effect_worker, port 5432)
 
 # apply migrations (drizzle-kit reads DATABASE_URL)
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/effect_worker pnpm exec drizzle-kit migrate
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/effect_worker bun run db:migrate
 ```
 
 Apps point their `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` (`.env`) at this
@@ -55,7 +48,7 @@ database for `wrangler dev`.
 
 | Command | What |
 |---------|------|
-| `pnpm db:generate` | generate a migration from `schema.ts` |
-| `pnpm db:migrate` | apply migrations |
-| `pnpm db:push` | push schema directly (no migration files) |
-| `pnpm db:studio` | open Drizzle Studio |
+| `bun run db:generate` | generate a migration from `schema.ts` |
+| `bun run db:migrate` | apply migrations |
+| `bun run db:push` | push schema directly (no migration files) |
+| `bun run db:studio` | open Drizzle Studio |

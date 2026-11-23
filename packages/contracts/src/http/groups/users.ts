@@ -7,11 +7,10 @@
  *
  * @module
  */
-import { HttpApiEndpoint, HttpApiGroup } from "effect/unstable/httpapi"
+import { HttpApiEndpoint, HttpApiGroup } from "effect/http-api"
 import { Schema as S } from "effect"
 import { CreateUserSchema } from "@repo/domain"
-import { UserCreationError, UserNotFoundError } from "@repo/domain"
-import { DatabaseMiddleware } from "../middleware"
+import { DatabaseConnectionError, UserCreationError, UserNotFoundError } from "@repo/domain"
 
 /**
  * User response schema — matches the `users` table row from `@repo/db`.
@@ -34,26 +33,20 @@ export const UsersListSchema = S.Struct({
 })
 export type UsersList = typeof UsersListSchema.Type
 
-/**
- * Users endpoint group definition.
- *
- * DatabaseMiddleware provides request-scoped database connections.
- */
 export const UsersGroup = HttpApiGroup.make("users")
-  .add(HttpApiEndpoint.get("list", "/", { success: UsersListSchema }))
+  .add(HttpApiEndpoint.get("list", "/", { success: UsersListSchema, error: DatabaseConnectionError }))
   .add(
     HttpApiEndpoint.get("get", "/:id", {
-      params: { id: S.NumberFromString },
+      params: { id: S.FiniteFromString },
       success: UserSchema,
-      error: UserNotFoundError
+      error: [UserNotFoundError, DatabaseConnectionError]
     })
   )
   .add(
     HttpApiEndpoint.post("create", "/", {
       payload: CreateUserSchema,
       success: UserSchema,
-      error: UserCreationError
+      error: [UserCreationError, DatabaseConnectionError]
     })
   )
-  .middleware(DatabaseMiddleware)
   .prefix("/users")

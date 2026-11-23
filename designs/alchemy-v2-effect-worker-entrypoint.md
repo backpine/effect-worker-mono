@@ -229,7 +229,7 @@ This removes, in one move:
   can depend on `CloudflareBindings` directly; `waitUntil` reads `ctx` from it).
 
 It keeps everything else (HttpApi, groups, `DatabaseMiddleware`, `wrangler.jsonc`).
-It is a small, type-safe refactor and is verifiable with `pnpm check`.
+It is a small, type-safe refactor and is verifiable with `bun run check`.
 
 > Caveat to verify when implementing: the `CloudflareBindings` service identity is
 > currently introduced via `HttpApiMiddleware` in `@repo/contracts`
