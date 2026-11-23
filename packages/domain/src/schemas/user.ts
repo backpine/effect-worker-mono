@@ -8,6 +8,9 @@
  */
 import { Schema as S } from "effect"
 
+// User IDs are stored as signed 32-bit integers.
+export const UserIdSchema = S.Int.check(S.isBetween({ minimum: -2147483648, maximum: 2147483647 }))
+
 /**
  * Create user request payload.
  */

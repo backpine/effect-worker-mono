@@ -1,4 +1,11 @@
-# UI SDK
+# Repository instructions
+
+## Effect Atom
+
+Follow the [Effect Atom skill](.agents/skills/effect-atom/SKILL.md) when working
+on React state, RPC queries or mutations, or cache invalidation in `apps/react-app`.
+
+## UI SDK
 
 Before working with UI SDK, follow the `ui-sdk` skill if it is installed and read
 `node_modules/@ui-sdk/react/docs/llms.txt` from `packages/ui`. Then read the

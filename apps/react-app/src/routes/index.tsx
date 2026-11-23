@@ -1,10 +1,13 @@
-import { Suspense, useRef, useState, type FormEvent } from "react"
+import { useRef, useState, type FormEvent } from "react"
 import { createFileRoute } from "@tanstack/react-router"
-import { useAtomValue, useAtomSet } from "@effect/atom-react"
-import { Cause } from "effect"
+import { useAtom, useAtomValue } from "@effect/atom-react"
+import { Cause, Exit, Option } from "effect"
+import { AsyncResult } from "effect/reactivity"
+import type { RpcClientError } from "effect/rpc"
+import type { DatabaseConnectionError, UserCreationError } from "@repo/domain"
 import { Button } from "@repo/ui/button"
 import { TextField } from "@repo/ui/text-field"
-import { usersAtom, createUserFn, usersKeys } from "@/atoms"
+import { createUserAtom, usersAtom } from "@/atoms"
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -15,9 +18,7 @@ function HomePage() {
     <div className="mx-auto max-w-2xl space-y-8">
       <h1 className="text-3xl font-bold">Users</h1>
       <CreateUserForm />
-      <Suspense fallback={<p className="text-muted-foreground">Loading users...</p>}>
-        <UsersList />
-      </Suspense>
+      <UsersList />
     </div>
   )
 }
@@ -26,20 +27,20 @@ function CreateUserForm() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const submitting = useRef(false)
-  const result = useAtomValue(createUserFn)
-  const submit = useAtomSet(createUserFn, { mode: "promise" })
+  const [result, submit] = useAtom(createUserAtom, { mode: "promiseExit" })
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const payload = { name: name.trim(), email: email.trim() }
+    // Promise setters observe the next settled result. Keep this form's writes serial.
     if (submitting.current || !payload.name || !payload.email) return
     submitting.current = true
     try {
-      await submit({ payload, reactivityKeys: usersKeys })
-      setName("")
-      setEmail("")
-    } catch {
-      // Error state is tracked in the atom
+      const exit = await submit(payload)
+      if (Exit.isSuccess(exit)) {
+        setName("")
+        setEmail("")
+      }
     } finally {
       submitting.current = false
     }
@@ -71,9 +72,9 @@ function CreateUserForm() {
           required
         />
       </div>
-      {result._tag === "Failure" && (
+      {result._tag === "Failure" && !result.waiting && (
         <p role="alert" className="text-sm text-destructive">
-          {Cause.pretty(result.cause)}
+          {userRequestError(result.cause, "Could not create the user.")}
         </p>
       )}
       <Button type="submit" busy={result.waiting}>
@@ -85,45 +86,55 @@ function CreateUserForm() {
 
 function UsersList() {
   const result = useAtomValue(usersAtom)
+  const error = result._tag === "Failure" && !result.waiting
+    ? userRequestError(result.cause, "Could not load users.")
+    : undefined
 
-  if (result._tag === "Initial") {
-    return <p className="text-muted-foreground">Loading users...</p>
+  // Keep the last successful list visible while it refreshes or if the refresh fails.
+  const data = AsyncResult.value(result)
+  if (Option.isNone(data)) {
+    return error
+      ? <p role="alert" className="text-destructive">{error}</p>
+      : <p className="text-muted-foreground">Loading users...</p>
   }
 
-  if (result._tag === "Failure") {
-    return (
-      <p className="text-destructive">
-        {Cause.pretty(result.cause)}
-      </p>
-    )
-  }
-
-  const { users, total } = result.value
-
-  if (users.length === 0) {
-    return (
-      <p className="text-muted-foreground">No users yet. Create one above.</p>
-    )
-  }
+  const { users, total } = data.value
 
   return (
-    <div className="space-y-2">
-      <h2 className="text-lg font-semibold">
-        All Users <span className="text-muted-foreground font-normal">({total})</span>
-      </h2>
-      <div className="divide-y divide-border rounded-lg border border-border bg-surface">
-        {users.map((user) => (
-          <div key={user.id} className="flex items-center justify-between px-4 py-3">
-            <div>
-              <p className="font-medium">{user.name}</p>
-              <p className="text-sm text-muted-foreground">{user.email}</p>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {user.createdAt.toLocaleDateString()}
-            </p>
+    <div aria-busy={result.waiting || undefined} className="space-y-2">
+      {error && <p role="alert" className="text-destructive">{error}</p>}
+      {users.length === 0 ? (
+        <p className="text-muted-foreground">No users yet. Create one above.</p>
+      ) : (
+        <>
+          <h2 className="text-lg font-semibold">
+            All Users <span className="text-muted-foreground font-normal">({total})</span>
+          </h2>
+          <div className="divide-y divide-border rounded-lg border border-border bg-surface">
+            {users.map((user) => (
+              <div key={user.id} className="flex items-center justify-between px-4 py-3">
+                <div>
+                  <p className="font-medium">{user.name}</p>
+                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {user.createdAt.toLocaleDateString()}
+                </p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      )}
     </div>
   )
+}
+
+function userRequestError(
+  cause: Cause.Cause<DatabaseConnectionError | UserCreationError | RpcClientError.RpcClientError>,
+  fallback: string,
+) {
+  const error = Cause.findErrorOption(cause)
+  return Option.isSome(error) && error.value._tag === "DatabaseConnectionError"
+    ? error.value.message
+    : fallback
 }

@@ -108,6 +108,12 @@ bun run deploy     # Deploy to Cloudflare
 - `POST /api/users` - Create user
 - `GET /api/openapi.json` - OpenAPI document
 
+### `@repo/cli`
+
+Bun CLI for API health and user management. Commands validate arguments with
+the domain schemas and call the API through the shared HTTP contract.
+See the [CLI guide](apps/cli/README.md) for commands and tests.
+
 ### `react-app`
 The React SPA and Effect RPC Worker share one origin. `worker/index.ts` selects
 the live database layer and `worker/runtime.ts` builds the router and RPC

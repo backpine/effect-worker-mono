@@ -1,1 +1,1 @@
-export { usersAtom, userAtom, createUserFn, usersKeys } from "./users"
+export { createUserAtom, usersAtom } from "./users"

@@ -6,4 +6,4 @@
  * @module
  */
 export { HealthGroup, HealthResponseSchema, type HealthResponse } from "./health"
-export { UsersGroup, UsersListSchema, type UsersList } from "./users"
+export { UserSchema, UsersGroup, UsersListSchema, type User, type UsersList } from "./users"

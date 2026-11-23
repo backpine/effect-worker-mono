@@ -3,4 +3,4 @@
  *
  * @module
  */
-export { CreateUserSchema, type CreateUser } from "./user"
+export { CreateUserSchema, UserIdSchema, type CreateUser } from "./user"
