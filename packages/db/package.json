@@ -11,6 +11,14 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./queries": {
+      "types": "./dist/queries/index.d.ts",
+      "import": "./dist/queries/index.js"
+    },
+    "./schema": {
+      "types": "./dist/schema/index.d.ts",
+      "import": "./dist/schema/index.js"
+    },
     "./*": {
       "types": "./dist/*.d.ts",
       "import": "./dist/*.js"
@@ -24,15 +32,17 @@
     "db:push": "bun --bun drizzle-kit push",
     "db:studio": "bun --bun drizzle-kit studio",
     "db:generate": "bun --bun drizzle-kit generate",
+    "db:check": "bun --bun drizzle-kit check",
     "db:migrate": "bun --bun drizzle-kit migrate"
   },
   "dependencies": {
-    "drizzle-orm": "1.0.0-rc.6",
-    "effect": "catalog:",
     "@effect/sql-pg": "catalog:",
-    "@repo/domain": "workspace:*"
+    "@repo/domain": "workspace:*",
+    "drizzle-orm": "0.45.4",
+    "effect": "catalog:"
   },
   "devDependencies": {
-    "drizzle-kit": "1.0.0-rc.6"
+    "drizzle-kit": "0.31.11",
+    "pg": "8.23.1"
   }
 }

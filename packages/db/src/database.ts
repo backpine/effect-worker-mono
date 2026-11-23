@@ -1,7 +1,7 @@
-/** The Drizzle service used by query programs. The caller provides its connection. */
 import { Context } from "effect"
-import type { EffectPgDatabase } from "drizzle-orm/effect-postgres"
+import type { SqlClient } from "effect/sql"
 
-export class Database extends Context.Service<Database, EffectPgDatabase>()(
+/** Query programs use the SQL client provided by the caller. */
+export class Database extends Context.Service<Database, SqlClient.SqlClient>()(
   "@repo/db/Database",
 ) {}

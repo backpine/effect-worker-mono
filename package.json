@@ -18,6 +18,7 @@
     "check": "bun run --filter '*' check",
     "clean": "bun run --filter '@repo/*' clean",
     "test": "bun test",
+    "test:db": "bun test packages/db/test",
     "coverage": "bun test --coverage"
   },
   "devDependencies": {

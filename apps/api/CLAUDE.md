@@ -1,6 +1,6 @@
-# Effect Worker API
+# API
 
-The REST API serves the `WorkerApi` contract from `@repo/contracts/http`.
+The REST API serves the `WorkerApi` contract from `@repo/contracts/api`.
 
 - `src/index.ts` selects the live database layer and exports the Worker.
 - `src/runtime.ts` assembles the API groups, validation, and HTTP platform services. `Worker.make` builds this graph once per isolate and supplies a fresh scope to each request.

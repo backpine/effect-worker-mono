@@ -184,7 +184,7 @@ yield* bucket.put("k", body).pipe(
 
 ## 4. How it fits our worker entry points
 
-Nothing changes at the entry for binding access — `CloudflareEnv`'s default reads `cloudflare:workers`, so `yield* r2(...)` works inside any handler with zero wiring. Our existing `effect-worker-api` `Bindings` service (env+ctx, provided per request) can be **replaced** by this `CloudflareEnv` reference; the DB middleware would build `PgDrizzle` from `yield* CloudflareEnv` instead of a bespoke service.
+Nothing changes at the entry for binding access — `CloudflareEnv`'s default reads `cloudflare:workers`, so `yield* r2(...)` works inside any handler with zero wiring. Our existing `api` `Bindings` service (env+ctx, provided per request) can be **replaced** by this `CloudflareEnv` reference; the DB middleware would build `PgDrizzle` from `yield* CloudflareEnv` instead of a bespoke service.
 
 For tests, override the env:
 
@@ -200,7 +200,7 @@ program.pipe(Effect.provideService(CloudflareEnv, fakeEnv))
 2. **Implement wrappers incrementally** — start with what we actually use (R2, KV, D1/`PgDrizzle`-via-Hyperdrive, Queues), add others (DO stubs, Service bindings, AI, Vectorize, Analytics Engine) on demand. Each is ~30 lines and self-contained.
 3. **Per project, add `src/cloudflare.ts`** (the 3-line `makeCloudflare<Env>(() => env)`), re-exporting the accessors.
 4. **Adopt in handlers** by replacing `await env.X.method()` / inline `Effect.tryPromise` with `yield* binding(e => e.X)` then `yield* client.method()`.
-5. **Migrate `effect-worker-api`** off its one-off `Bindings` service to `CloudflareEnv` (consolidation).
+5. **Migrate `api`** off its one-off `Bindings` service to `CloudflareEnv` (consolidation).
 
 **Adding a new binding type** = write `wrapFoo(raw): FooClient` + a `FooError` + add one accessor line to `makeCloudflare`. No infra, no codegen.
 

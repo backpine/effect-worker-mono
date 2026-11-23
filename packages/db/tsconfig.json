@@ -4,5 +4,5 @@
     "types": ["node", "bun"],
     "noEmit": true
   },
-  "include": ["src", "test"]
+  "include": ["src", "test", "drizzle.config.ts"]
 }

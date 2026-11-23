@@ -1,7 +1,8 @@
 import { env } from "cloudflare:workers"
 import { Effect, Layer } from "effect"
 import { makeCloudflare } from "@repo/cloudflare"
-import { connect, Database } from "@repo/db"
+import { connect } from "@repo/db/connect"
+import { Database } from "@repo/db/database"
 import { DatabaseConnectionError } from "@repo/domain"
 
 const { hyperdrive } = makeCloudflare<Env>(() => env)

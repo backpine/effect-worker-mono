@@ -40,4 +40,5 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         uses: ./.github/actions/setup
+      - run: bun run --filter @repo/db db:check
       - run: bun test

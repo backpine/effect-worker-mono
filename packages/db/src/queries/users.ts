@@ -1,80 +1,45 @@
-/**
- * User Queries
- *
- * Reusable Effect programs for user database operations.
- *
- * @module
- */
-import { Effect } from "effect"
+import { Effect, Schema } from "effect"
+import type { SqlClient } from "effect/sql"
+import { UserCreationError, UserNotFoundError, type CreateUser } from "@repo/domain"
 import { Database } from "../database.js"
-import { eq } from "drizzle-orm"
+import type { User } from "../schema/users.js"
 
-import { users } from "../schema"
-import type { CreateUser } from "@repo/domain"
-import { UserNotFoundError, UserCreationError } from "@repo/domain"
+const userRow = Schema.Struct({
+  id: Schema.Int,
+  email: Schema.String,
+  name: Schema.String,
+  createdAt: Schema.Date,
+}) satisfies Schema.Schema<User>
 
-// ============================================================================
-// Query Programs
-// ============================================================================
+const decodeUsers = Schema.decodeUnknownEffect(Schema.Array(userRow))
+const decodeUser = Schema.decodeUnknownEffect(userRow)
+const columns = (sql: SqlClient.SqlClient) => sql`id, email, name, created_at AS "createdAt"`
 
-/**
- * Find all users.
- */
 export const findAllUsers = Effect.gen(function* () {
-  const drizzle = yield* Database
-  const rows = yield* drizzle
-    .select()
-    .from(users)
-    .pipe(Effect.orElseSucceed(() => []))
+  const sql = yield* Database
+  const rows = yield* sql`SELECT ${columns(sql)} FROM users ORDER BY id`
+  return yield* decodeUsers(rows)
+}).pipe(Effect.orDie)
 
-  return rows
-})
-
-/**
- * Find a user by numeric id.
- */
 export const findUserById = (id: number) =>
   Effect.gen(function* () {
-    const drizzle = yield* Database
-    const rows = yield* drizzle
-      .select()
-      .from(users)
-      .where(eq(users.id, id))
-      .pipe(Effect.orElseSucceed(() => []))
-
-    const row = rows[0]
-
-    if (!row) {
-      return yield* Effect.fail(
-        new UserNotFoundError({ id, message: `User not found: ${id}` })
-      )
+    // Only PostgreSQL integer values can match the primary key.
+    if (Number.isInteger(id) && id >= -2147483648 && id <= 2147483647) {
+      const sql = yield* Database
+      const rows = yield* sql`SELECT ${columns(sql)} FROM users WHERE id = ${id}`.pipe(Effect.orDie)
+      if (rows.length > 0) return yield* decodeUser(rows[0]).pipe(Effect.orDie)
     }
 
-    return row
+    return yield* new UserNotFoundError({ id, message: `User not found: ${id}` })
   })
 
-/**
- * Create a new user.
- *
- * @param data - CreateUser payload (email, name)
- * @returns Effect that yields created User or fails with UserCreationError
- */
-export const createUser = (
-  data: CreateUser
-) =>
+export const createUser = (data: CreateUser) =>
   Effect.gen(function* () {
-    const drizzle = yield* Database
-    const rows = yield* drizzle
-      .insert(users)
-      .values({ email: data.email, name: data.name })
-      .returning()
-      .pipe(Effect.mapError(() => new UserCreationError(data)))
-
-    const row = rows[0]
-
-    if (!row) {
-      return yield* Effect.fail(new UserCreationError(data))
-    }
-
-    return row
+    const sql = yield* Database
+    const [row] = yield* sql`
+      INSERT INTO users (email, name) VALUES (${data.email}, ${data.name})
+      RETURNING ${columns(sql)}
+    `.pipe(Effect.mapError(() => new UserCreationError(data)))
+    if (row === undefined) return yield* new UserCreationError(data)
+    return yield* decodeUser(row).pipe(Effect.orDie)
   })

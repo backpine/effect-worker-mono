@@ -1,4 +1,4 @@
-# Alchemy v2 & a cleaner entry point for `effect-worker-api`
+# Alchemy v2 & a cleaner entry point for `api`
 
 **Status:** research / findings — _no code changed_
 **Date:** 2026-05-23
@@ -27,7 +27,7 @@
 
 Three files cooperate to get a request into the Effect world:
 
-**`apps/effect-worker-api/src/index.ts`** — manually builds an Effect `Context` of
+**`apps/api/src/index.ts`** — manually builds an Effect `Context` of
 per-request "reference" services and threads it into the web handler:
 
 ```typescript
@@ -42,7 +42,7 @@ export default {
 } satisfies ExportedHandler<Env>
 ```
 
-**`apps/effect-worker-api/src/services/cloudflare.ts`** — declares the two bindings as
+**`apps/api/src/services/cloudflare.ts`** — declares the two bindings as
 **nullable** `Context.Reference`s with a `null` default:
 
 ```typescript
@@ -52,7 +52,7 @@ export const currentCtx = Context.Reference<ExecutionContext | null>(
   "@app/api/currentCtx", { defaultValue: () => null })
 ```
 
-**`apps/effect-worker-api/src/services/middleware.ts`** — reads those references back
+**`apps/api/src/services/middleware.ts`** — reads those references back
 out, null-checks them, and only then provides the "real" `CloudflareBindings` service:
 
 ```typescript
@@ -81,7 +81,7 @@ return yield* httpEffect.pipe(Effect.provideService(CloudflareBindings, { env, c
    together by hand.
 
 > Note: the **middleware pattern itself** (`.middleware(CloudflareBindingsMiddleware)` in
-> `@repo/contracts/src/http/api.ts`, `DatabaseMiddleware` on the `users` group) is
+> `@repo/contracts/src/api/api.ts`, `DatabaseMiddleware` on the `users` group) is
 > idiomatic Effect HttpApi and worth keeping. The hacky part is specifically the
 > nullable-reference bridge feeding it.
 
@@ -281,7 +281,7 @@ fast-moving framework. **Not actionable today.**
 
 ## Recommendation
 
-1. **Do Path A now** as an isolated refactor of `effect-worker-api`: collapse the
+1. **Do Path A now** as an isolated refactor of `api`: collapse the
    `currentEnv`/`currentCtx` nullable bridge into a single non-nullable `CloudflareBindings`
    service provided at the entry point, and let the `WorkerApi` `HttpApp` be the handler.
    This removes the hacky feeling, is fully type-checked, and keeps us on stock Effect v4.
@@ -291,9 +291,9 @@ fast-moving framework. **Not actionable today.**
 
 ## References
 
-- Current code: `apps/effect-worker-api/src/{index,runtime}.ts`,
-  `apps/effect-worker-api/src/services/{cloudflare,middleware}.ts`,
-  `packages/contracts/src/http/{api.ts,middleware/cloudflare.ts}`.
+- Current code: `apps/api/src/{index,runtime}.ts`,
+  `apps/api/src/services/{cloudflare,middleware}.ts`,
+  `packages/contracts/src/api/{api.ts,middleware/cloudflare.ts}`.
 - Alchemy v2 docs: `v2.alchemy.run/concepts/platform`, `…/concepts/binding`.
 - Alchemy v2 source (`sam/iae2`): `@alchemy.run/effect/src/{bind,service,runtime}.ts`,
   `@alchemy.run/effect-aws/src/lambda/serve.ts` (runtime handler contract),

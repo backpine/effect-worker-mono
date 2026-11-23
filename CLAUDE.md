@@ -19,18 +19,18 @@ stable exports. Remove those aliases when the React app migrates its imports.
 bun install          # Install dependencies
 bun run build            # Build packages and apps in dependency order
 bun run check            # Type check all packages/apps (runs per-package)
-bun test             # Run the workspace tests
+bun test                 # Run the workspace tests with Docker running
+bun run test:db          # Run the isolated PostgreSQL tests
 
 # App development (run from app directory)
-cd apps/effect-worker-api
+cd apps/api
 bun run dev              # Start local dev server with wrangler
 bun run deploy           # Deploy to Cloudflare
 
 # Database operations (run from packages/db)
 cd packages/db
-DATABASE_URL=postgres://... bun run db:push      # Push schema to database
-DATABASE_URL=postgres://... bun run db:studio    # Open Drizzle Studio
-DATABASE_URL=postgres://... bun run db:generate  # Generate migrations
+bun run db:generate --name=describe_the_change   # Generate migrations
+bun run db:check                                 # Check migration history
 DATABASE_URL=postgres://... bun run db:migrate   # Run migrations
 ```
 
@@ -57,13 +57,13 @@ const bucket = yield* r2((e) => e.BUCKET)        // effectful R2 client
 const { connectionString } = yield* hyperdrive((e) => e.HYPERDRIVE)
 ```
 
-**REST Worker** (`apps/effect-worker-api`): `Worker.make` builds the router and
+**REST Worker** (`apps/api`): `Worker.make` builds the router and
 group layers once per isolate and supplies a fresh request scope. The composition
 root passes the database layer to the users group. The users handlers build
 it per request after decoding, and the request owns the connection. RPC in
 `react-app` uses its existing database middleware.
 
-**Query Programs**: Database queries live in `@repo/db/src/queries/` as Effect programs requiring the `Database` tag. Handlers call these instead of inline queries.
+**Query Programs**: Put parameterized Effect SQL in `packages/db/src/queries/`. Handlers import the programs from `@repo/db/queries` and supply the request's `Database` service. The [DB package guide](packages/db/README.md) covers schema updates and test fixtures.
 
 ### Import Conventions
 
@@ -86,10 +86,12 @@ CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="postgres://postgres:po
 |------|----------|
 | Domain types, branded schemas | `@repo/domain/src/schemas/` |
 | Domain errors | `@repo/domain/src/errors/` |
-| Database tables (Drizzle) | `@repo/db/src/schema.ts` |
+| Database tables (Drizzle) | `packages/db/src/schema/` |
+| Database migrations | `packages/db/migrations/` |
+| PostgreSQL integration tests and fixtures | `packages/db/test/` |
 | Reusable queries | `@repo/db/src/queries/` |
-| HTTP endpoint definitions | `@repo/contracts/src/http/groups/` |
+| HTTP endpoint definitions | `@repo/contracts/src/api/groups/` |
 | RPC procedure definitions | `@repo/contracts/src/rpc/procedures/` |
 | Middleware tags | `@repo/contracts/src/*/middleware/` |
 | Handler implementations | `apps/*/src/handlers/` |
-| REST database layer | `apps/effect-worker-api/src/services/database.ts` |
+| REST database layer | `apps/api/src/services/database.ts` |

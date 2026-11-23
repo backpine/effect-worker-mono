@@ -1,7 +1,8 @@
 import { Effect, Layer } from "effect"
 import { HttpApiBuilder } from "effect/http-api"
-import { WorkerApi } from "@repo/contracts/http"
-import { type Database, UserQueries } from "@repo/db"
+import { WorkerApi } from "@repo/contracts/api"
+import type { Database } from "@repo/db/database"
+import { UserQueries } from "@repo/db/queries"
 import type { DatabaseConnectionError } from "@repo/domain"
 
 export const makeUsersGroup = (database: Layer.Layer<Database, DatabaseConnectionError>) => {

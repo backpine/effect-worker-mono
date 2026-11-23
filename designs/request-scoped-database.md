@@ -1,6 +1,6 @@
 # Design: request‑scoped Postgres (Drizzle over Hyperdrive), provided via middleware
 
-**Status:** implemented · **Scope:** `effect-worker-api` (HTTP) and the RPC worker (`apps/react-app/worker`).
+**Status:** implemented · **Scope:** `api` (HTTP) and the RPC worker (`apps/react-app/worker`).
 
 > **Thesis.** On Cloudflare, the Postgres connection must be opened **per request**, never globally — a socket opened at isolate startup throws ("I/O outside a request"). We make the database a **service provided by middleware**, built inside the request `Scope`, and let Effect v4's type system make it impossible to ship a DB‑using route without wiring that connection. We are **deleting the custom `pg-drizzle` bridge** and standing the database service back up on the **official `drizzle-orm/effect-postgres`** client, fed by the **`@repo/cloudflare`** binding accessor.
 
@@ -138,7 +138,7 @@ export const findAllUsers: Effect.Effect<User[], never, Database> =
 ### 4d. Middleware **contract** — `provides: Database` (`@repo/contracts`)
 
 ```ts
-// packages/contracts/src/http/middleware/database.ts
+// packages/contracts/src/api/middleware/database.ts
 export class DatabaseMiddleware extends HttpApiMiddleware.Service<
   DatabaseMiddleware,
   { provides: Database }
@@ -152,7 +152,7 @@ export class DatabaseMiddleware extends HttpApiMiddleware.Service<
 Because `CloudflareEnv` is a `Context.Reference` (reading it adds nothing to `R`) and `Scope` comes from `HttpRouter.Provided`, the impl is a plain `Layer.succeed` — no `Layer.effect`‑read‑at‑build trick, no `Bindings` service:
 
 ```ts
-// apps/effect-worker-api/src/services/database.ts
+// apps/api/src/services/database.ts
 export const DatabaseMiddlewareLive = Layer.succeed(
   DatabaseMiddleware,
   (httpEffect) =>
@@ -172,7 +172,7 @@ export const DatabaseMiddlewareLive = Layer.succeed(
 ### 4f. The group **attaches** the middleware (`@repo/contracts`)
 
 ```ts
-// packages/contracts/src/http/groups/users.ts
+// packages/contracts/src/api/groups/users.ts
 export const UsersGroup = HttpApiGroup.make("users")
   .add(/* list / get / create … */)
   .middleware(DatabaseMiddleware)     // ← subtracts Database from every handler's R
@@ -184,7 +184,7 @@ export const UsersGroup = HttpApiGroup.make("users")
 No `Bindings` to thread — `CloudflareEnv` defaults to `cloudflare:workers` `env`. The entry already runs the app in a request `Scope`:
 
 ```ts
-// apps/effect-worker-api/src/index.ts  (already in this shape)
+// apps/api/src/index.ts  (already in this shape)
 apiApp.pipe(                                   // apiApp = HttpRouter.toHttpEffect(ApiLayer)
   Effect.flatten,
   Effect.provideService(HttpServerRequest.HttpServerRequest, HttpServerRequest.fromWeb(request)),
@@ -258,7 +258,7 @@ The RPC worker (`apps/react-app/worker`) currently has in‑memory handlers and 
 - [ ] `drizzle-orm@1.0.0-rc.x` + matching `drizzle-kit`; reconcile schema + queries.
 - [ ] `@repo/db`: `database.ts` (the `Database` tag) + `connect.ts` (request‑scoped factory) + updated barrel.
 - [ ] `@repo/contracts`: `DatabaseMiddleware { provides: Database }` (already exists — retarget the tag).
-- [ ] `apps/effect-worker-api`: `DatabaseMiddlewareLive` via `Layer.succeed` reading `@repo/cloudflare`'s `hyperdrive(...)`.
+- [ ] `apps/api`: `DatabaseMiddlewareLive` via `Layer.succeed` reading `@repo/cloudflare`'s `hyperdrive(...)`.
 - [ ] `UsersGroup.middleware(DatabaseMiddleware)` (already attached).
 - [ ] Configure `PgClient.layer({ types })` for Drizzle‑owned codecs.
 - [ ] Validate in `wrangler dev`: `GET /api/users` **and** `POST /api/users` over Hyperdrive.
@@ -272,4 +272,4 @@ The RPC worker (`apps/react-app/worker`) currently has in‑memory handlers and 
 - Middleware mechanism (verified): `repos/effect/packages/effect/src/unstable/httpapi/HttpApiMiddleware.ts` (`Provides`/`Requires`/`ApplyServices` @ 197/205/213), `HttpApiEndpoint.ts` (@ 145/918), `HttpRouter.ts` (`Provided` incl. `Scope` @ 794); RPC: `…/unstable/rpc/RpcMiddleware.ts`.
 - New client: `drizzle-orm/effect-postgres` — `make` / `makeWithDefaults` / `DefaultServices` / `effectPgCodecs` (see `drizzle-effect-postgres-v4-findings.md`).
 - Binding access: `@repo/cloudflare` (`CloudflareEnv`, `hyperdrive`) — `designs/effectful-cloudflare-bindings.md`.
-- Implementation: `packages/db/src/{connect,database}.ts`, `apps/effect-worker-api/src/services/middleware.ts`, `apps/react-app/worker/middleware.ts`.
+- Implementation: `packages/db/src/{connect,database}.ts`, `apps/api/src/services/middleware.ts`, `apps/react-app/worker/middleware.ts`.

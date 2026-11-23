@@ -11,10 +11,10 @@ servers require a supported Node.js installation.
 bun install    # Install dependencies
 bun run build  # Build packages and apps
 bun run check  # Type check
-bun test       # Run tests
+bun test       # Run tests with Docker running
 
 # Local development
-cd apps/effect-worker-api
+cd apps/api
 bun run dev    # Start dev server
 ```
 
@@ -24,7 +24,7 @@ bun run dev    # Start dev server
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Applications                              │
 │  ┌──────────────────┐ ┌──────────────────┐                     │
-│  │effect-worker-api │ │     react-app    │                     │
+│  │       api        │ │     react-app    │                     │
 │  │   (HTTP REST)    │ │(SPA + RPC Worker)│                     │
 │  └──────────────────┘ └──────────────────┘                     │
 ├─────────────────────────────────────────────────────────────────┤
@@ -84,20 +84,19 @@ Drizzle ORM schema, the `Database` service tag, the request-scoped `connect`
 factory, and reusable Effect query programs.
 
 ```typescript
-import { users, Database } from "@repo/db"
+import { UserQueries } from "@repo/db/queries"
 
-// Queries yield the Database service supplied for the request.
-const db = yield* Database
-const rows = yield* db.select().from(users)
+// The request supplies the Database service.
+const rows = yield* UserQueries.findAllUsers
 ```
 
 ## Applications
 
-### `effect-worker-api`
+### `api`
 REST HTTP API built with `effect/http-api` and served by `@repo/cloudflare`.
 
 ```bash
-cd apps/effect-worker-api
+cd apps/api
 bun run dev        # Local dev server
 bun run deploy     # Deploy to Cloudflare
 ```
@@ -167,7 +166,7 @@ export class UserNotFoundError extends S.TaggedError<UserNotFoundError>()(
 ```
 effect-worker-mono/
 ├── apps/
-│   ├── effect-worker-api/     # HTTP REST API
+│   ├── api/                   # HTTP REST API
 │   │   ├── src/
 │   │   │   ├── index.ts       # Worker entry point
 │   │   │   ├── runtime.ts     # API composition root
@@ -184,7 +183,7 @@ effect-worker-mono/
 │   │       └── errors/        # Domain errors
 │   ├── contracts/             # API definitions
 │   │   └── src/
-│   │       ├── http/          # HTTP endpoints
+│   │       ├── api/           # REST API contracts
 │   │       └── rpc/           # RPC procedures
 │   ├── cloudflare/            # Effect Worker adapter and bindings
 │   │   └── src/
@@ -193,7 +192,7 @@ effect-worker-mono/
 │   │       └── {r2,kv,queue}.ts  # Per-binding effect wrappers
 │   └── db/                    # Database
 │       └── src/
-│           ├── schema.ts      # Drizzle tables
+│           ├── schema/        # Drizzle tables
 │           ├── database.ts    # Database service tag
 │           ├── connect.ts     # Request-scoped connection factory
 │           └── queries/       # Reusable Effect query programs
@@ -254,7 +253,8 @@ The `HYPERDRIVE` suffix must match your binding name. Wrangler will automaticall
 |---------|-------------|
 | `bun run build` | Build packages and apps |
 | `bun run check` | Type check all packages |
-| `bun test` | Run all tests |
+| `bun test` | Run all tests with Docker running |
+| `bun run test:db` | Run the PostgreSQL suite |
 | `bun run coverage` | Generate coverage report |
 | `bun run clean` | Remove dist folders |
 
@@ -267,7 +267,7 @@ The `HYPERDRIVE` suffix must match your binding name. Wrangler will automaticall
 | HTTP | `effect/http-api` |
 | RPC | `effect/rpc` |
 | UI | React + Vite + TanStack Router |
-| Database | Drizzle ORM (`drizzle-orm/effect-postgres`) + PostgreSQL |
+| Database | Effect SQL + PostgreSQL, with Drizzle schema and migrations |
 | Build | Bun workspaces + TypeScript |
 | Testing | Bun test |
 | Deployment | Wrangler |
@@ -275,9 +275,9 @@ The `HYPERDRIVE` suffix must match your binding name. Wrangler will automaticall
 ## Key Dependencies
 
 - **effect** (`4.1.5`) - Core runtime; HTTP and RPC live under `effect/http`, `effect/http-api`, and `effect/rpc`
-- **@effect/sql-pg** - PostgreSQL client (underlies the Drizzle connection)
+- **@effect/sql-pg** (`4.1.5`) - Request-scoped PostgreSQL client
 - **@effect/atom-react** - Reactive state for the React SPA
-- **drizzle-orm** (`1.0.0-rc.6`) - Type-safe ORM; `drizzle-orm/effect-postgres` client
+- **drizzle-orm** (`0.45.4`) and **drizzle-kit** (`0.31.11`) - Table definitions and migrations
 - **@tanstack/react-router** - Type-safe file-based routing
 - **wrangler** - Cloudflare Workers CLI
 
@@ -286,27 +286,21 @@ The `HYPERDRIVE` suffix must match your binding name. Wrangler will automaticall
 1. **Make changes** to packages or apps
 2. **Build the workspace** to compile packages and generate the React route tree: `bun run build`
 3. **Type check**: `bun run check`
-4. **Run tests**: `bun test`
-5. **Dev server**: `cd apps/effect-worker-api && bun run dev`
+4. **Run tests**: Start Docker and run `bun test`
+5. **Dev server**: `cd apps/api && bun run dev`
 6. **Deploy**: `bun run deploy`
 
 ## Database Operations
 
 ```bash
 cd packages/db
-
-# Push schema changes
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/effect_worker bun run db:push
-
-# Open Drizzle Studio
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/effect_worker bun run db:studio
-
-# Generate migrations
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/effect_worker bun run db:generate
-
-# Run migrations
+docker compose up -d --wait
+bun run db:generate --name=describe_the_change
+bun run db:check
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/effect_worker bun run db:migrate
 ```
+
+See the [DB package guide](packages/db/README.md) for query and fixture examples.
 
 ## License
 
